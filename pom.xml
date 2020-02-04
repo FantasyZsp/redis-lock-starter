@@ -83,18 +83,8 @@
     </dependencies>
 
     <build>
-        <finalName>SiShuRedisLockApp</finalName>
+        <finalName>siShuRedisLockApp</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <fork>true</fork>
-                    <!--增加jvm参数-->
-                    <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
-                    <executable>true</executable>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -103,6 +93,27 @@
                     <target>11</target>
                 </configuration>
             </plugin>
+            <!-- 要将源码放上去，需要加入这个插件 -->
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+        <repository>
+            <id>maven-releases</id>
+            <url>http://nexus.sishuxuefu.com:38020/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
 </project>
