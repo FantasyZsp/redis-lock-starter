@@ -1,0 +1,33 @@
+{
+  "properties": [
+    {
+      "name": "redisson.database",
+      "type": "java.lang.Integer",
+      "description": "Description for redisson.database.",
+      "sourceType": "org.redisson.config.SingleServerConfig"
+    },
+    {
+      "name": "redisson.address",
+      "type": "java.lang.String",
+      "description": "Description for redisson.address.",
+      "sourceType": "org.redisson.config.SingleServerConfig"
+    },
+    {
+      "name": "redisson.connection-pool-size",
+      "type": "java.lang.Integer",
+      "description": "Description for redisson.connection-pool-size.",
+      "sourceType": "org.redisson.config.SingleServerConfig"
+    },
+    {
+      "name": "redisson.enable",
+      "type": "java.lang.Boolean",
+      "description": "Description for redisson.enable.",
+      "sourceType": "org.redisson.config.SingleServerConfig"
+    },
+    {
+      "name": "redis-lock.enable",
+      "type": "java.lang.Boolean",
+      "description": "Description for redis-lock.enable."
+    }
+  ]
+}
