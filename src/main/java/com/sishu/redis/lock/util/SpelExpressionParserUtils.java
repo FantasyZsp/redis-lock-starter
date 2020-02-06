@@ -24,7 +24,7 @@ public class SpelExpressionParserUtils {
    */
   private static DefaultParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
 
-  public static String generateKeyByEl(String expressionString, ProceedingJoinPoint joinPoint) {
+  public static Object generateKeyByEl(String expressionString, ProceedingJoinPoint joinPoint) {
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     String[] paramNames = nameDiscoverer.getParameterNames(methodSignature.getMethod());
     if (ObjectUtils.isEmpty(paramNames)) {
@@ -36,6 +36,6 @@ public class SpelExpressionParserUtils {
     for (int i = 0; i < args.length; i++) {
       context.setVariable(paramNames[i], args[i]);
     }
-    return Objects.requireNonNull(expression.getValue(context)).toString();
+    return Objects.requireNonNull(expression.getValue(context));
   }
 }

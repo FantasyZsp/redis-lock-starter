@@ -7,6 +7,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,6 +45,11 @@ public class RedisLockAnnotaionWorkService {
     }
     ThreadUtils.join(1000);
     DATABASES.put(girl.getAge(), girl);
+  }
+
+  @RedisLock(key = "#girls.![age]", exceptionMessage = "multiKey", waitTime = 0)
+  public void multiKey(List<GirlDTO> girls) {
+    log.info("multiKey invoke...");
   }
 
 }

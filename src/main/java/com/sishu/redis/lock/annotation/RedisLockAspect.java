@@ -2,6 +2,7 @@ package com.sishu.redis.lock.annotation;
 
 import com.sishu.redis.lock.util.SpelExpressionParserUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
@@ -16,6 +17,12 @@ import org.springframework.util.Assert;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,15 +53,20 @@ public class RedisLockAspect implements Ordered {
 
     String route = annotation.route();
     String keySpel = annotation.key();
-    String lockKey = SpelExpressionParserUtils.generateKeyByEl(keySpel, pjp);
+    Object lockKey = SpelExpressionParserUtils.generateKeyByEl(keySpel, pjp);
+
 
     Object result;
-    String lockName = appendLockName(route, lockKey);
-    RLock lock = redissonClient.getLock(lockName);
+
+    if (lockKey instanceof Collection) {
+      return pjp.proceed();
+    }
+    List<String> lockNameList = appendLockNameList(route, lockKey);
+    List<RLock> lockList = getLockList(lockNameList);
 
     boolean lockSuccess = false;
     try {
-      lock(annotation, lockName, lock);
+      lockBatch(annotation, lockNameList, lockList);
       lockSuccess = true;
       result = pjp.proceed();
     } catch (Throwable e) {
@@ -68,11 +80,26 @@ public class RedisLockAspect implements Ordered {
       // mark 解决 重入情况下会直接释放锁而不是减重入次数。
       // 当加锁失败时，需要注意是否需要解锁
       if (lockSuccess) {
-        log.info("解锁: {}", lock.getName());
-        lock.unlock();
+//        log.info("解锁: {}", lock.getName());
+//        lock.unlock();
       }
     }
     return result;
+  }
+
+  private void lockBatch(RedisLock annotation, List<String> lockNameList, List<RLock> lockList) {
+
+  }
+
+  private List<RLock> getLockList(List<String> lockNameList) {
+    Assert.notNull(lockNameList, "must not be null");
+    List<RLock> rLockList = new ArrayList<>(lockNameList.size());
+    // 顺序加锁防死锁
+    Collections.sort(lockNameList);
+    for (String lockName : lockNameList) {
+      rLockList.add(redissonClient.getLock(lockName));
+    }
+    return rLockList;
   }
 
   private void lock(RedisLock redisLock, String lockName, RLock lock) throws InterruptedException, NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
@@ -97,12 +124,53 @@ public class RedisLockAspect implements Ordered {
     }
   }
 
-  private String appendLockName(String route, String lockKey) {
-    Assert.hasText(lockKey, "must not be empty");
+  private String appendLockName(String route, Object lockKey) {
+    Assert.notNull(lockKey, "must not be null");
+    if (lockKey instanceof String) {
+      Assert.hasText((String) lockKey, "must not be empty");
+    }
     if (StringUtils.isNotBlank(route)) {
       route = route + SEPARATOR;
     }
     return NAME_SPACE + route + lockKey;
+  }
+
+  private List<String> appendLockNameList(String route, Object lockKey) {
+    Assert.notNull(lockKey, "must not be null");
+    if (lockKey instanceof String) {
+      Assert.hasText((String) lockKey, "must not be empty");
+    }
+
+    if (StringUtils.isNotBlank(route)) {
+      route = route + SEPARATOR;
+    }
+
+    List<String> lockNameList = new ArrayList<>(objectLength(lockKey));
+    // 暂不考虑map
+    if (lockKey instanceof Collection) {
+      for (Object key : (Collection<?>) lockKey) {
+        lockNameList.add(appendLockName(route, key));
+      }
+    } else {
+      lockNameList.add(appendLockName(route, lockKey));
+    }
+    return lockNameList;
+  }
+
+  public static int objectLength(Object object) {
+    Objects.requireNonNull(object);
+    if (object instanceof Collection) {
+      return ((Collection<?>) object).size();
+    }
+
+    if (object instanceof Map<?, ?>) {
+      return ((Map<?, ?>) object).size();
+    }
+
+    if (object.getClass().isArray()) {
+      return ArrayUtils.getLength(object);
+    }
+    return 1;
   }
 
 
