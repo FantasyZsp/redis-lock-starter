@@ -83,7 +83,6 @@
     </dependencies>
 
     <build>
-        <finalName>siShuRedisLockApp</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
