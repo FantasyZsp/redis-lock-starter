@@ -2,6 +2,7 @@ package com.sishu.redis.lock.annotation;
 
 import com.sishu.redis.lock.util.SpelExpressionParserUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,10 +21,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.stream.Collectors;
 
 /**
  * 拦截RedisLock注解方法切面
@@ -55,40 +59,47 @@ public class RedisLockAspect implements Ordered {
     String keySpel = annotation.key();
     Object lockKey = SpelExpressionParserUtils.generateKeyByEl(keySpel, pjp);
 
-
     Object result;
-
-    if (lockKey instanceof Collection) {
-      return pjp.proceed();
-    }
-    List<String> lockNameList = appendLockNameList(route, lockKey);
-    List<RLock> lockList = getLockList(lockNameList);
-
+    List<RLock> lockList = getLockList(route, lockKey);
     boolean lockSuccess = false;
     try {
-      lockBatch(annotation, lockNameList, lockList);
+      lockBatch(annotation, lockList);
       lockSuccess = true;
+      log.debug("lock batch success");
       result = pjp.proceed();
     } catch (Throwable e) {
+
       if (lockSuccess) {
-        log.error("business error");
+        log.debug("lock success but business error");
       } else {
-        log.error("lock failed");
+        log.error("lock batch failed");
       }
       throw e;
     } finally {
       // mark 解决 重入情况下会直接释放锁而不是减重入次数。
       // 当加锁失败时，需要注意是否需要解锁
       if (lockSuccess) {
-//        log.info("解锁: {}", lock.getName());
-//        lock.unlock();
+        unlockBatch(lockList);
       }
     }
     return result;
   }
 
-  private void lockBatch(RedisLock annotation, List<String> lockNameList, List<RLock> lockList) {
+  private void unlockBatch(List<RLock> lockList) {
+    if (CollectionUtils.isEmpty(lockList)) {
+      return;
+    }
+    // 逆序解锁
+    lockList.sort(Comparator.comparing(RLock::getName).reversed());
+    for (RLock rLock : lockList) {
+      log.info("解锁: {}", rLock.getName());
+      rLock.unlock();
+    }
+  }
 
+
+  private List<RLock> getLockList(String route, Object lockKey) {
+    return getLockList(appendLockNameList(route, lockKey));
   }
 
   private List<RLock> getLockList(List<String> lockNameList) {
@@ -102,7 +113,30 @@ public class RedisLockAspect implements Ordered {
     return rLockList;
   }
 
-  private void lock(RedisLock redisLock, String lockName, RLock lock) throws InterruptedException, NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+  /**
+   * 当批量加锁失败时，需要释放已加的锁
+   */
+  private void lockBatch(RedisLock annotation, List<RLock> lockList) throws Exception {
+    if (CollectionUtils.isEmpty(lockList)) {
+      return;
+    }
+    List<RLock> successList = new ArrayList<>(lockList.size());
+    for (RLock rLock : lockList) {
+      try {
+        lock(annotation, rLock.getName(), rLock);
+        successList.add(rLock);
+      } catch (Exception e) {
+        log.debug("release locks when ex： {}", successList);
+        successList.forEach(Lock::unlock);
+        throw e;
+      } finally {
+        successList.clear();
+      }
+    }
+  }
+
+
+  private void lock(RedisLock redisLock, String lockName, RLock lock) throws Exception {
     long waitTime = redisLock.waitTime();
     boolean waitForeverWhenHeldByOtherThread = waitTime < 0;
     long leaseTime = redisLock.leaseTime();
@@ -110,15 +144,16 @@ public class RedisLockAspect implements Ordered {
     Class<?> exceptionClass = redisLock.exceptionClass();
     String exceptionMessage = redisLock.exceptionMessage();
 
-    log.info("尝试加锁: {}", lockName);
+    log.debug("attempt to lock: {}", lockName);
     if (waitForeverWhenHeldByOtherThread) {
       lock.lock(leaseTime, timeUnit);
+      log.debug("lock success: {}", lockName);
     } else {
       boolean getLock = lock.tryLock(waitTime, leaseTime, timeUnit);
       if (!getLock) {
         Constructor<?> constructor = exceptionClass.getConstructor(String.class);
         RuntimeException exception = (RuntimeException) constructor.newInstance(exceptionMessage);
-        log.error("获取锁失败: {}", lockName);
+        log.debug("lock failed: {}", lockName);
         throw exception;
       }
     }
@@ -148,6 +183,13 @@ public class RedisLockAspect implements Ordered {
     List<String> lockNameList = new ArrayList<>(objectLength(lockKey));
     // 暂不考虑map
     if (lockKey instanceof Collection) {
+
+      // 去重。不去重可能会导致重复加锁，多了一次网络io
+      // 去空。不加锁空的对象
+      lockKey = ((Collection<?>) lockKey).stream().distinct()
+        .filter(Objects::nonNull)
+        .collect(Collectors.toCollection(ArrayList::new));
+
       for (Object key : (Collection<?>) lockKey) {
         lockNameList.add(appendLockName(route, key));
       }

@@ -1,0 +1,9 @@
+redisson:
+  address: "redis://127.0.0.1:6379"
+  database: 1
+  connection-pool-size: 32
+redis-lock:
+  enable: true
+logging:
+  level:
+    com.sishu.redis.lock.annotation.RedisLockAspect: debug

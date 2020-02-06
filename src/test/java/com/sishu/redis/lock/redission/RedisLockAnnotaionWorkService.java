@@ -47,7 +47,7 @@ public class RedisLockAnnotaionWorkService {
     DATABASES.put(girl.getAge(), girl);
   }
 
-  @RedisLock(key = "#girls.![age]", exceptionMessage = "multiKey", waitTime = 0)
+  @RedisLock(key = "#girls.![age]", exceptionMessage = "multiKey test", waitTime = 0, exceptionClass = NullPointerException.class)
   public void multiKey(List<GirlDTO> girls) {
     log.info("multiKey invoke...");
   }
