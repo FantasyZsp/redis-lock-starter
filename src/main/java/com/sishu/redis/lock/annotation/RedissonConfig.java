@@ -36,7 +36,8 @@ public class RedissonConfig {
   @Bean
   @DependsOn("singleServerConfig")
   public RedissonClient redissonClient(Config redissonSingleServerConfig) {
-    log.info("redissonClient init...");
+    log.info("redissonClient init. address:{}, database:{}", redissonSingleServerConfig.useSingleServer().getAddress(),
+      redissonSingleServerConfig.useSingleServer().getDatabase());
     return Redisson.create(redissonSingleServerConfig);
   }
 }
