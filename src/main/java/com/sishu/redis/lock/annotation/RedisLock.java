@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public @interface RedisLock {
 
   /**
-   * 功能模块，用于细化锁的粒度，拼接在key前面
+   * 功能模块或者资源类别，用于细化锁的粒度，拼接在key前面
    * route:key
    */
   String route() default "";

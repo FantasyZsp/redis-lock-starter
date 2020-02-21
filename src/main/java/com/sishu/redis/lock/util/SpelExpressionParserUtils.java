@@ -1,6 +1,5 @@
 package com.sishu.redis.lock.util;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.DefaultParameterNameDiscoverer;
@@ -27,7 +26,7 @@ public class SpelExpressionParserUtils {
   public static Object generateKeyByEl(String expressionString, ProceedingJoinPoint joinPoint) {
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     String[] paramNames = nameDiscoverer.getParameterNames(methodSignature.getMethod());
-    if (ObjectUtils.isEmpty(paramNames)) {
+    if (null == paramNames || paramNames.length == 0) {
       return expressionString;
     }
     Expression expression = parser.parseExpression(expressionString);
@@ -36,6 +35,6 @@ public class SpelExpressionParserUtils {
     for (int i = 0; i < args.length; i++) {
       context.setVariable(paramNames[i], args[i]);
     }
-    return Objects.requireNonNull(expression.getValue(context));
+    return Objects.requireNonNull(expression.getValue(context), "key not be null");
   }
 }

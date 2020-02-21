@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sishu</groupId>
     <artifactId>redis-lock-starter</artifactId>
-    <version>1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <name>redis-lock-starter</name>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
+            <version>3.8.1</version>
         </dependency>
 
         <dependency>
