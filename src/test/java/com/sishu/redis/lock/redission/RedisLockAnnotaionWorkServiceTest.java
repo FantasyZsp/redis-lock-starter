@@ -89,4 +89,9 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
     redisLockAnnotaionWorkService.multiKey(null);
   }
 
+  @Test
+  public void testSpelConcat() {
+    redisLockAnnotaionWorkService.keyConcat(new GirlDTO().setId(1), new GirlDTO().setId(2));
+  }
+
 }

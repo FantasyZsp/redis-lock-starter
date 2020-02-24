@@ -52,4 +52,10 @@ public class RedisLockAnnotaionWorkService {
     log.info("multiKey invoke...");
   }
 
+  @RedisLock(route = "redis-lock", key = "T(java.lang.String).valueOf(#girl1.id).concat(':').concat(#girl2.id)", waitTime = 0)
+  public String keyConcat(GirlDTO girl1, GirlDTO girl2) {
+    ThreadUtils.join(100);
+    return "success";
+  }
+
 }
