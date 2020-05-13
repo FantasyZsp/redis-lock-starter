@@ -7,21 +7,21 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 /**
  * @author ZSP
  */
-@Configuration
 public class JacksonConfig {
 
   @Bean
+  @ConditionalOnMissingBean
   public JavaTimeModule javaTimeModule() {
     return new JavaTimeModule();
   }
 
   @Bean
+  @ConditionalOnMissingBean
   public Jdk8Module jdk8Module() {
     return new Jdk8Module();
   }
