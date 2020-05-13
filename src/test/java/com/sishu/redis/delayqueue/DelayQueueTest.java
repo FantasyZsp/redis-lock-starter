@@ -59,6 +59,30 @@ public class DelayQueueTest extends RootTest {
   }
 
   @Test
+  public void testConsumeEx() {
+    log.info("testConsumeEx start...");
+    RBlockingQueue<Order> blockingFairQueue = redissonClient.getBlockingQueue("delay_queue");
+    // 这里必须获取一下延时队列，否则blockingFairQueue.take()会一直阻塞
+    redissonClient.getDelayedQueue(blockingFairQueue);
+    Order order;
+    try {
+      order = blockingFairQueue.take();
+      // 异常后，redis中被取出的这条数据会丢失
+      log.info("获取到order: {} 后异常", order.getId());
+      throw new RuntimeException();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testConsumeEx2() {
+    Consumer consumer = new Consumer(redissonClient);
+
+    ThreadUtils.startAndJoin(consumer);
+  }
+
+  @Test
   public void getDelayedTime() {
     System.out.println(Order.ofSeconds(10).getDelay(TimeUnit.NANOSECONDS));
   }
