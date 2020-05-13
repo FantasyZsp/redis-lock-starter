@@ -1,4 +1,4 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.lock.redisson;
 
 import com.sishu.redis.lock.annotation.RedisLock;
 import lombok.extern.slf4j.Slf4j;

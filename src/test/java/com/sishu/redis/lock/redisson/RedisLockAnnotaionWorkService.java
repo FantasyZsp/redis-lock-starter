@@ -1,4 +1,4 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.lock.redisson;
 
 import com.sishu.redis.lock.annotation.RedisLock;
 import com.sishu.redis.lock.util.ThreadUtils;

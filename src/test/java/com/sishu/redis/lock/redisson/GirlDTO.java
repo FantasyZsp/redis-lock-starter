@@ -1,4 +1,4 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.lock.redisson;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

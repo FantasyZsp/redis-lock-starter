@@ -1,4 +1,4 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.lock.redisson;
 
 import com.sishu.redis.RootTest;
 import com.sishu.redis.lock.util.ThreadUtils;

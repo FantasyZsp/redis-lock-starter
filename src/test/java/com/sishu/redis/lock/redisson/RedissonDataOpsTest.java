@@ -1,4 +1,4 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.lock.redisson;
 
 import com.sishu.redis.RootTest;
 import lombok.extern.slf4j.Slf4j;
@@ -19,22 +19,22 @@ import static com.sishu.redis.lock.util.LogUtils.print;
  * @author ZSP
  */
 @Slf4j
-public class RedissionDataOpsTest extends RootTest {
+public class RedissonDataOpsTest extends RootTest {
   @Autowired
-  private RedissonClient redissionClient;
+  private RedissonClient redissonClient;
 
   @Before
   public void before() {
-    log.info("redis database：{}", redissionClient.getConfig().useSingleServer().getDatabase());
+    log.info("redis database：{}", redissonClient.getConfig().useSingleServer().getDatabase());
   }
 
 
   @Test
   public void testLong() {
-    RAtomicLong myLong = redissionClient.getAtomicLong("myLong");
+    RAtomicLong myLong = redissonClient.getAtomicLong("myLong");
     myLong.set(1000L);
 
-    RAtomicLong myLong2 = redissionClient.getAtomicLong("myLong");
+    RAtomicLong myLong2 = redissonClient.getAtomicLong("myLong");
     long value = myLong2.get();
     log.info("value: {}", value);
     myLong.compareAndSet(1000L, 2000L);
@@ -42,7 +42,7 @@ public class RedissionDataOpsTest extends RootTest {
 
   @Test
   public void testKeys() {
-    RKeys keys = redissionClient.getKeys();
+    RKeys keys = redissonClient.getKeys();
     log.info("keys : {}", keys);
     log.info("keys.count() : {}", keys.count());
 
@@ -54,7 +54,7 @@ public class RedissionDataOpsTest extends RootTest {
   @Test
   public void testSetValue() {
     String key = "testSetValue";
-    RBucket<String> myString = redissionClient.getBucket(key);
+    RBucket<String> myString = redissonClient.getBucket(key);
     print("是否存在：{}", myString.isExists());
     print("myString 值：{}", myString.get());
 
@@ -74,13 +74,13 @@ public class RedissionDataOpsTest extends RootTest {
 
   @Test
   public void testStringOps() {
-    RBucket<String> myString = redissionClient.getBucket("testStr");
+    RBucket<String> myString = redissonClient.getBucket("testStr");
     print("myString：{}", myString.isExists());
   }
 
   @Test
   public void testDtoOps() {
-    RBucket<GirlDTO> girlDto = redissionClient.getBucket("girl");
+    RBucket<GirlDTO> girlDto = redissonClient.getBucket("girl");
     GirlDTO girl = new GirlDTO().setId(1).setAge(2).setCupSize("3");
     girlDto.set(girl);
     print("girlDto: {}", girlDto.get());
@@ -93,7 +93,7 @@ public class RedissionDataOpsTest extends RootTest {
 
   @Test
   public void testCompareAndSet() {
-    RBucket<GirlDTO> girlDto = redissionClient.getBucket("girl");
+    RBucket<GirlDTO> girlDto = redissonClient.getBucket("girl");
     GirlDTO girl = new GirlDTO().setId(1).setAge(2).setCupSize("3");
     girlDto.set(girl);
     print("girlDto: {}", girlDto.get());
@@ -109,7 +109,7 @@ public class RedissionDataOpsTest extends RootTest {
 
   @Test
   public void testCompareAndSetByWhichContent() {
-    RBucket<GirlDTO> girlDto = redissionClient.getBucket("girl");
+    RBucket<GirlDTO> girlDto = redissonClient.getBucket("girl");
     GirlDTO girl = new GirlDTO().setId(1).setAge(2).setCupSize("3");
     girlDto.set(girl);
     print("girlDto: {}", girlDto.get());
