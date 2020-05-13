@@ -36,6 +36,12 @@ public @interface RedisLock {
    */
   long waitTime() default -1;
 
+  /**
+   * 自动释放锁的时间。
+   * 请合理预估业务需要时间，防止锁提前被释放。
+   * 指定为-1时，代表一直锁定直到明确调用释放锁的api。
+   * 有些实现会给出一个默认的过期时间，并在过期前自动续时直到执行完业务后释放锁。
+   */
   long leaseTime() default -1;
 
   TimeUnit timeUnit() default TimeUnit.MILLISECONDS;

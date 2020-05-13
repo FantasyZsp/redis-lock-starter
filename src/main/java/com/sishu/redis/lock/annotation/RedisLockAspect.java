@@ -176,10 +176,6 @@ public class RedisLockAspect implements Ordered {
       Assert.hasText((String) lockKey, "must not be empty");
     }
 
-    if (StringUtils.isNotBlank(route)) {
-      route = route + SEPARATOR;
-    }
-
     List<String> lockNameList = new ArrayList<>(objectLength(lockKey));
     // 暂不考虑map
     if (lockKey instanceof Collection) {
@@ -232,7 +228,7 @@ public class RedisLockAspect implements Ordered {
 
   @Override
   public int getOrder() {
-    return Ordered.HIGHEST_PRECEDENCE;
+    return Ordered.HIGHEST_PRECEDENCE + 100;
   }
 
   public void init() {
