@@ -27,7 +27,7 @@
         </dependency>
 
 
-        <!-- Lombock框架 -->
+        <!-- Lombok框架 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
