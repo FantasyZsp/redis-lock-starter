@@ -48,4 +48,12 @@ public class ThreadUtils {
   public static void start(Thread thread) {
     thread.start();
   }
+
+  public static void join(Thread thread) {
+    try {
+      thread.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
 }

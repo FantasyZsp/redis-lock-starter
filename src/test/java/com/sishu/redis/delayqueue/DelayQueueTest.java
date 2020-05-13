@@ -38,15 +38,16 @@ public class DelayQueueTest extends RootTest {
 
   @After
   public void after() {
-//    redissonClient.shutdown();
+    redissonClient.shutdown();
   }
 
   @Test
   public void test() {
 
 
-    Thread producer = new Producer(redissonClient);
-    Thread producer2 = new Producer(redissonClient);
+    int max = Integer.MAX_VALUE;
+    Thread producer = new Producer(redissonClient, max, 2, 10);
+    Thread producer2 = new Producer(redissonClient, max, 5, 20);
     ThreadUtils.start(producer);
     ThreadUtils.start(producer2);
 
@@ -56,6 +57,22 @@ public class DelayQueueTest extends RootTest {
     ThreadUtils.startAndJoin(consumer2);
 
 
+  }
+
+  @Test
+  public void testProducer() {
+    Thread producer = new Producer(redissonClient, 10, 10, 60);
+    Thread producer2 = new Producer(redissonClient, 10, 20, 180);
+    ThreadUtils.start(producer);
+    ThreadUtils.startAndJoin(producer2);
+    ThreadUtils.join(producer);
+  }
+
+  @Test
+  public void testConsume() {
+    Consumer consumer = new Consumer(redissonClient);
+
+    ThreadUtils.startAndJoin(consumer);
   }
 
   @Test
@@ -75,11 +92,29 @@ public class DelayQueueTest extends RootTest {
     }
   }
 
-  @Test
-  public void testConsumeEx2() {
-    Consumer consumer = new Consumer(redissonClient);
 
-    ThreadUtils.startAndJoin(consumer);
+  @Test
+  public void testPeek() {
+    log.info("testConsumeEx start...");
+    RBlockingQueue<Order> blockingFairQueue = redissonClient.getBlockingQueue("delay_queue");
+    // 这里必须获取一下延时队列，否则blockingFairQueue.take()会一直阻塞
+    redissonClient.getDelayedQueue(blockingFairQueue);
+    Order order = null;
+    try {
+
+      while (order == null) {
+        order = blockingFairQueue.peek();
+        if (order == null) {
+          log.info("没有获取到...");
+          ThreadUtils.join(100);
+        }
+      }
+
+      log.info("获取到order: {}", order.getId());
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Test
@@ -162,11 +197,17 @@ class Consumer extends Thread {
 @Slf4j
 class Producer extends Thread {
   private transient static AtomicInteger counter = new AtomicInteger();
-  private RedissonClient redissonClient;
+  private final RedissonClient redissonClient;
+  private final int max;
+  private final int minSecond;
+  private final int maxSecond;
 
-  public Producer(RedissonClient redissonClient) {
+  public Producer(RedissonClient redissonClient, int max, int minSecond, int maxSecond) {
     super("producer-" + counter.getAndIncrement());
     this.redissonClient = redissonClient;
+    this.max = max;
+    this.minSecond = minSecond;
+    this.maxSecond = maxSecond;
   }
 
   @Override
@@ -176,9 +217,9 @@ class Producer extends Thread {
     RBlockingQueue<Order> blockingFairQueue = redissonClient.getBlockingQueue("delay_queue");
 
     RDelayedQueue<Order> delayedQueue = redissonClient.getDelayedQueue(blockingFairQueue);
-    for (; ; ) {
+    for (int i = 0; i < max; i++) {
       ThreadUtils.sleepSeconds(ThreadLocalRandom.current().nextInt(2, 10));
-      Order order = Order.ofSeconds(ThreadLocalRandom.current().nextInt(5, 20));
+      Order order = Order.ofSeconds(ThreadLocalRandom.current().nextInt(minSecond, maxSecond));
       delayedQueue.offer(order, order.getDelay(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
       log.info("放入延时队列: {} {}", order.getId(), order.getInvalidTime());
     }
