@@ -141,6 +141,7 @@ class Consumer extends Thread {
   @Override
   public void run() {
     RBlockingQueue<Order> blockingFairQueue = redissonClient.getBlockingQueue("delay_queue");
+    RDelayedQueue<Order> delayedQueue = redissonClient.getDelayedQueue(blockingFairQueue);
 //    ThreadUtils.join(10_000);
     log.info("开始获取.......");
 
@@ -149,8 +150,10 @@ class Consumer extends Thread {
       try {
         order = blockingFairQueue.take();
         log.info("订单[{}]失效时间: {}: ", order.getId(), order.getInvalidTime());
-      } catch (InterruptedException e) {
-        e.printStackTrace();
+      } catch (InterruptedException ignore) {
+      } catch (Exception e) {
+        delayedQueue.destroy();
+        throw new RuntimeException(e);
       }
     }
   }
