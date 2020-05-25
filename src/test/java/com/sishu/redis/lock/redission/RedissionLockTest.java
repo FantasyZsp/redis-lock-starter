@@ -76,6 +76,59 @@ public class RedissionLockTest extends RootTest {
     tryLock(lockName);
   }
 
+
+  @Test
+  public void tryLock() {
+    final String lockName = "tryLock";
+    RLock lock = redissonClient.getLock(lockName);
+    // 可重入，value中计数
+    try {
+      boolean lockResult = lock.tryLock(1, -1, TimeUnit.SECONDS);
+      if (lockResult) {
+        log.info("上锁成功");
+//        throw new RuntimeException("业务错误");
+      } else {
+        log.info("上锁失败");
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (RuntimeException e) {
+      log.info("error: {}", e.getCause().toString());
+
+      throw e;
+    } finally {
+      lock.unlock();
+    }
+//    if (lock.isLocked()) {
+//    }
+
+
+    Runnable runnable = () -> {
+      try {
+        RLock lock1 = redissonClient.getLock(lockName);
+        System.out.println(lock1);
+
+        boolean lockResult = lock1.tryLock(10, -1, TimeUnit.SECONDS);
+        if (lockResult) {
+          log.info("thread 上锁成功");
+        } else {
+          log.info("thread 上锁失败");
+        }
+      } catch (InterruptedException e) {
+        log.info("error");
+        e.printStackTrace();
+      }
+    };
+
+    Thread thread = new Thread(runnable);
+    Thread thread2 = new Thread(runnable);
+    thread.start();
+    thread2.start();
+
+    ThreadUtils.sleepSeconds(30);
+  }
+
+
   @Test(expected = IllegalMonitorStateException.class)
   public void lockWithTime() {
     final String lockName = "lockWithTime";

@@ -4,6 +4,7 @@ import com.sishu.redis.lock.annotation.RedisLock;
 import com.sishu.redis.lock.util.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -56,6 +57,15 @@ public class RedisLockAnnotaionWorkService {
   public String keyConcat(GirlDTO girl1, GirlDTO girl2) {
     ThreadUtils.join(100);
     return "success";
+  }
+
+
+  @RedisLock(route = "redis-lock-bu-error", key = "#uniqueName", waitTime = 100)
+  public String lockBusinessError(String uniqueName) {
+    if (RandomUtils.nextInt(1, 4) > 2) {
+      throw new RuntimeException("error");
+    }
+    return uniqueName + " lock success";
   }
 
 }

@@ -70,7 +70,7 @@ public class RedisLockAspect implements Ordered {
     } catch (Throwable e) {
 
       if (lockSuccess) {
-        log.debug("lock success but business error");
+        log.debug("lock success but business error: {}", e.getMessage());
       } else {
         log.error("lock batch failed");
       }
@@ -129,8 +129,6 @@ public class RedisLockAspect implements Ordered {
         log.debug("release locks when ex： {}", successList);
         successList.forEach(Lock::unlock);
         throw e;
-      } finally {
-        successList.clear();
       }
     }
   }
@@ -153,8 +151,10 @@ public class RedisLockAspect implements Ordered {
       if (!getLock) {
         Constructor<?> constructor = exceptionClass.getConstructor(String.class);
         RuntimeException exception = (RuntimeException) constructor.newInstance(exceptionMessage);
-        log.debug("lock failed: {}", lockName);
+        log.debug("try lock failed: {}", lockName);
         throw exception;
+      } else {
+        log.debug("try lock success: {}", lockName);
       }
     }
   }

@@ -2,6 +2,7 @@ package com.sishu.redis.lock.redission;
 
 import com.sishu.redis.RootTest;
 import com.sishu.redis.lock.util.ThreadUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -9,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author ZSP
  */
+@Slf4j
 public class RedisLockAnnotaionWorkServiceTest extends RootTest {
   @Autowired
   private RedisLockAnnotaionWorkService redisLockAnnotaionWorkService;
@@ -94,4 +98,30 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
     redisLockAnnotaionWorkService.keyConcat(new GirlDTO().setId(1), new GirlDTO().setId(2));
   }
 
+  @Test
+  public void testLockBusinessError() {
+
+    CyclicBarrier start = new CyclicBarrier(5);
+    CyclicBarrier end = new CyclicBarrier(5);
+
+    Runnable runnable = () -> {
+      try {
+        log.info("await...");
+        start.await();
+        log.info("start...");
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      } catch (BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+      redisLockAnnotaionWorkService.lockBusinessError("test_error");
+    };
+    ThreadUtils.start(new Thread(runnable, "T1"));
+    ThreadUtils.start(new Thread(runnable, "T2"));
+    ThreadUtils.start(new Thread(runnable, "T3"));
+    ThreadUtils.start(new Thread(runnable, "T4"));
+    ThreadUtils.start(new Thread(runnable, "T5"));
+    ThreadUtils.sleepSeconds(30000);
+
+  }
 }
