@@ -36,6 +36,10 @@ public @interface RedisLock {
    */
   long waitTime() default -1;
 
+  /**
+   * -1表明线程在占有锁期间不会因为执行时间过长导致锁释放。
+   * 正数代表在指定时间后将自动释放锁。
+   */
   long leaseTime() default -1;
 
   TimeUnit timeUnit() default TimeUnit.MILLISECONDS;

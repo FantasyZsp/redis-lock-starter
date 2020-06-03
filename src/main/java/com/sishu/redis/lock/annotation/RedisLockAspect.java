@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 
 /**
@@ -80,21 +79,29 @@ public class RedisLockAspect implements Ordered {
       // mark 解决 重入情况下会直接释放锁而不是减重入次数。
       // 当加锁失败时，需要注意是否需要解锁
       if (lockSuccess) {
-        unlockBatch(lockList);
+        unlockBatch(annotation, lockList);
       }
     }
     return result;
   }
 
-  private void unlockBatch(List<RLock> lockList) {
+  private void unlockBatch(RedisLock annotation, List<RLock> lockList) {
     if (CollectionUtils.isEmpty(lockList)) {
       return;
     }
+
+    boolean releaseSyncMode = annotation.leaseTime() == -1;
+
     // 逆序解锁
     lockList.sort(Comparator.comparing(RLock::getName).reversed());
     for (RLock rLock : lockList) {
       log.debug("解锁: {}", rLock.getName());
-      rLock.unlock();
+      if (releaseSyncMode) {
+        rLock.unlock();
+      } else {
+        // no care ex when unlock
+        rLock.unlockAsync();
+      }
     }
   }
 
@@ -121,6 +128,8 @@ public class RedisLockAspect implements Ordered {
     if (CollectionUtils.isEmpty(lockList)) {
       return;
     }
+    boolean releaseSyncMode = annotation.leaseTime() == -1;
+
     List<RLock> successList = new ArrayList<>(lockList.size());
     for (RLock rLock : lockList) {
       try {
@@ -128,7 +137,12 @@ public class RedisLockAspect implements Ordered {
         successList.add(rLock);
       } catch (Exception e) {
         log.debug("release locks when lock ex： {}", successList);
-        successList.forEach(Lock::unlock);
+        if (releaseSyncMode) {
+          successList.forEach(RLock::unlock);
+        } else {
+          // no care ex when unlock
+          successList.forEach(RLock::unlockAsync);
+        }
         throw e;
       }
     }
