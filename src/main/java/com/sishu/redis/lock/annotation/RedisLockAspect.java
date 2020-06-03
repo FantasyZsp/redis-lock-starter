@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RedisLockAspect implements Ordered {
 
-  private static final String NAME_SPACE = "REDIS_LOCK:";
+  private static final String NAME_SPACE = "RL:";
   private static final String SEPARATOR = ":";
 
   private RedissonClient redissonClient;
@@ -66,6 +66,7 @@ public class RedisLockAspect implements Ordered {
       lockBatch(annotation, lockList);
       lockSuccess = true;
       log.debug("lock batch success");
+      // do business or next aspect
       result = pjp.proceed();
     } catch (Throwable e) {
 
@@ -126,7 +127,7 @@ public class RedisLockAspect implements Ordered {
         lock(annotation, rLock.getName(), rLock);
         successList.add(rLock);
       } catch (Exception e) {
-        log.debug("release locks when ex： {}", successList);
+        log.debug("release locks when lock ex： {}", successList);
         successList.forEach(Lock::unlock);
         throw e;
       }
@@ -143,11 +144,31 @@ public class RedisLockAspect implements Ordered {
     String exceptionMessage = redisLock.exceptionMessage();
 
     log.debug("attempt to lock: {}", lockName);
+
+
+    // 预期内的上锁结果，代指无论上锁成功与否都没有抛出代码本身异常。预期外的结果如解锁错误，寻址可用服务错误，系统error等。
+    boolean lockResultExpected = true;
+
     if (waitForeverWhenHeldByOtherThread) {
-      lock.lock(leaseTime, timeUnit);
-      log.debug("lock success: {}", lockName);
+
+      try {
+        lock.lock(leaseTime, timeUnit);
+        log.debug("lock success: {}", lockName);
+      } catch (Throwable ex) {
+        lockResultExpected = false;
+        log.error("lock failed unexpected, lockName: {}, error reason:{}", lockName, ex.getMessage());
+      }
+
     } else {
-      boolean getLock = lock.tryLock(waitTime, leaseTime, timeUnit);
+
+      boolean getLock = true;
+      try {
+        getLock = lock.tryLock(waitTime, leaseTime, timeUnit);
+      } catch (Throwable ex) {
+        lockResultExpected = false;
+        log.error("try lock failed unexpected, lockName: {}, error reason:{}", lockName, ex.getMessage());
+      }
+
       if (!getLock) {
         Constructor<?> constructor = exceptionClass.getConstructor(String.class);
         RuntimeException exception = (RuntimeException) constructor.newInstance(exceptionMessage);
@@ -157,6 +178,14 @@ public class RedisLockAspect implements Ordered {
         log.debug("try lock success: {}", lockName);
       }
     }
+
+    // 包装并抛出预期外错误
+    if (!lockResultExpected) {
+      Constructor<?> constructor = exceptionClass.getConstructor(String.class);
+      throw (RuntimeException) constructor.newInstance(exceptionMessage);
+    }
+
+
   }
 
   private String appendLockName(String route, Object lockKey) {
@@ -164,9 +193,7 @@ public class RedisLockAspect implements Ordered {
     if (lockKey instanceof String) {
       Assert.hasText((String) lockKey, "must not be empty");
     }
-    if (StringUtils.isNotBlank(route)) {
-      route = route + SEPARATOR;
-    }
+
     return NAME_SPACE + route + lockKey;
   }
 
