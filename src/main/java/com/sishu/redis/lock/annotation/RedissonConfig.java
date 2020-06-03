@@ -28,8 +28,8 @@ public class RedissonConfig {
   @Bean
   @DependsOn("redissonSingleServerConfig")
   @ConfigurationProperties(prefix = "redisson")
-  public SingleServerConfig singleServerConfig(Config redissionSingleServerConfig) {
-    return redissionSingleServerConfig.useSingleServer();
+  public SingleServerConfig singleServerConfig(Config redissonSingleServerConfig) {
+    return redissonSingleServerConfig.useSingleServer();
   }
 
 
