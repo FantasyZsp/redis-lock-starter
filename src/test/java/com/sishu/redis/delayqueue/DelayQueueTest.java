@@ -56,7 +56,20 @@ public class DelayQueueTest extends RootTest {
     ThreadUtils.start(consumer);
     ThreadUtils.startAndJoin(consumer2);
 
+  }
 
+  /**
+   * 没有去重
+   */
+  @Test
+  public void testSameKey() {
+    RBlockingQueue<Order> blockingFairQueue = redissonClient.getBlockingQueue("same_key");
+    RDelayedQueue<Order> delayedQueue = redissonClient.getDelayedQueue(blockingFairQueue);
+    Order order = Order.ofSeconds(1000);
+    delayedQueue.offer(order, order.getDelay(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+    delayedQueue.offer(order, order.getDelay(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+    log.info("放入延时队列: {} {}", order.getId(), order.getInvalidTime());
+    ThreadUtils.sleepSeconds(10000);
   }
 
   @Test
@@ -134,8 +147,6 @@ class Order implements Delayed {
 
   private String id;
   private String name;
-  // 发货时间
-  private LocalDateTime deliveryTime;
   // 订单失效时间
   @NotNull
   private LocalDateTime invalidTime;
@@ -155,7 +166,6 @@ class Order implements Delayed {
     return Order.builder()
       .id("id" + counter.incrementAndGet())
       .name("name" + counter.get())
-      .deliveryTime(LocalDateTime.now())
       .invalidTime(LocalDateTime.now().plusSeconds(seconds))
       .build();
   }
