@@ -148,6 +148,7 @@ public class RedisLockAspect implements Ordered {
 
     // 预期内的上锁结果，代指无论上锁成功与否都没有抛出代码本身异常。预期外的结果如解锁错误，寻址可用服务错误，系统error等。
     boolean lockResultExpected = true;
+    Throwable throwable = null;
 
     if (waitForeverWhenHeldByOtherThread) {
 
@@ -156,6 +157,7 @@ public class RedisLockAspect implements Ordered {
         log.debug("lock success: {}", lockName);
       } catch (Throwable ex) {
         lockResultExpected = false;
+        throwable = ex;
         log.error("lock failed unexpected, lockName: {}, error reason:{}", lockName, ex.getMessage());
       }
 
@@ -166,13 +168,14 @@ public class RedisLockAspect implements Ordered {
         getLock = lock.tryLock(waitTime, leaseTime, timeUnit);
       } catch (Throwable ex) {
         lockResultExpected = false;
+        throwable = ex;
         log.error("try lock failed unexpected, lockName: {}, error reason:{}", lockName, ex.getMessage());
       }
 
       if (!getLock) {
         Constructor<?> constructor = exceptionClass.getConstructor(String.class);
         RuntimeException exception = (RuntimeException) constructor.newInstance(exceptionMessage);
-        log.debug("try lock failed: {}", lockName);
+        log.error("try lock failed: {}", lockName);
         throw exception;
       } else {
         log.debug("try lock success: {}", lockName);
@@ -181,6 +184,7 @@ public class RedisLockAspect implements Ordered {
 
     // 包装并抛出预期外错误
     if (!lockResultExpected) {
+      log.debug("unexpected ex when redis lock working, lockName: {}", lockName, throwable);
       Constructor<?> constructor = exceptionClass.getConstructor(String.class);
       throw (RuntimeException) constructor.newInstance(exceptionMessage);
     }
