@@ -95,7 +95,7 @@ public class RedisLockAspect implements Ordered {
     // 逆序解锁
     lockList.sort(Comparator.comparing(RLock::getName).reversed());
     for (RLock rLock : lockList) {
-      log.debug("解锁: {}", rLock.getName());
+      log.debug("解锁: {}, unlock mode: {}", rLock.getName(), releaseSyncMode ? "sync" : "async");
       if (releaseSyncMode) {
         rLock.unlock();
       } else {
