@@ -65,6 +65,21 @@ public class RedisLockAnnotaionWorkService {
     if (RandomUtils.nextInt(1, 4) > 2) {
       throw new RuntimeException("error");
     }
+    ThreadUtils.join(100);
+    return uniqueName + " lock success";
+  }
+
+  @RedisLock(route = "tryLockWithRelease", key = "#uniqueName", waitTime = 100, leaseTime = 50)
+  public String tryLockWithRelease(String uniqueName) {
+    log.info("{} entrance business", Thread.currentThread().getName());
+    ThreadUtils.join(100);
+    return uniqueName + " lock success";
+  }
+
+  @RedisLock(route = "lockWithRelease", key = "#uniqueName", leaseTime = 50)
+  public String lockWithRelease(String uniqueName) {
+    log.info("{} entrance business", Thread.currentThread().getName());
+    ThreadUtils.join(100);
     return uniqueName + " lock success";
   }
 

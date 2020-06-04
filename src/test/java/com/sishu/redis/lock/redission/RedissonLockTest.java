@@ -33,6 +33,7 @@ public class RedissonLockTest extends RootTest {
     try {
       ThreadUtils.join(100);
       lock.lock(100000, TimeUnit.MILLISECONDS);
+      log.info("lock success {}", Thread.currentThread());
       ThreadUtils.join(10000);
     } finally {
       lock.forceUnlock();
@@ -177,7 +178,7 @@ public class RedissonLockTest extends RootTest {
   public void concurrentLock() {
     new Thread(lockTask, "T-1").start();
     new Thread(lockTask, "T-2").start();
-    ThreadUtils.join(500000);
+    ThreadUtils.join(50000);
   }
 
   @Test

@@ -124,4 +124,56 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
     ThreadUtils.sleepSeconds(30000);
 
   }
+
+  @Test
+  public void testLockBusinessError2Release() {
+
+    CyclicBarrier start = new CyclicBarrier(5);
+    CyclicBarrier end = new CyclicBarrier(5);
+
+    Runnable runnable = () -> {
+      try {
+        log.info("await...");
+        start.await();
+        log.info("start...");
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      } catch (BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+      redisLockAnnotaionWorkService.tryLockWithRelease("test_error");
+    };
+    ThreadUtils.start(new Thread(runnable, "T1"));
+    ThreadUtils.start(new Thread(runnable, "T2"));
+    ThreadUtils.start(new Thread(runnable, "T3"));
+    ThreadUtils.start(new Thread(runnable, "T4"));
+    ThreadUtils.start(new Thread(runnable, "T5"));
+    ThreadUtils.sleepSeconds(30000);
+
+  }
+
+  @Test
+  public void lockWithRelease() {
+
+    CyclicBarrier start = new CyclicBarrier(5);
+    CyclicBarrier end = new CyclicBarrier(5);
+
+    Runnable runnable = () -> {
+      try {
+        log.info("await...");
+        start.await();
+        log.info("start...");
+      } catch (InterruptedException | BrokenBarrierException e) {
+        e.printStackTrace();
+      }
+      redisLockAnnotaionWorkService.lockWithRelease("lockWithRelease");
+    };
+    ThreadUtils.start(new Thread(runnable, "T1"));
+    ThreadUtils.start(new Thread(runnable, "T2"));
+    ThreadUtils.start(new Thread(runnable, "T3"));
+    ThreadUtils.start(new Thread(runnable, "T4"));
+    ThreadUtils.start(new Thread(runnable, "T5"));
+    ThreadUtils.sleepSeconds(30000);
+
+  }
 }
