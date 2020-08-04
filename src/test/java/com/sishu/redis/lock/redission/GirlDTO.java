@@ -40,4 +40,8 @@ public class GirlDTO {
   public int hashCode() {
     return Objects.hash(id);
   }
+
+  public String hasId(String id) {
+    return id + "mark";
+  }
 }
