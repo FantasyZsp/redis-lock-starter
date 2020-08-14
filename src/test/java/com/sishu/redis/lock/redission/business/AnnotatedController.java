@@ -1,6 +1,7 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.lock.redission.business;
 
 import com.sishu.redis.lock.annotation.RedisLock;
+import com.sishu.redis.lock.redission.GirlDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,12 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/annotaion/redis-lock")
-public class RedisLockAnnotaionWorkController {
-  private final RedisLockAnnotaionWorkService redisLockAnnotaionWorkService;
+public class AnnotatedController {
+  private final AnnotatedService annotatedService;
 
-  public RedisLockAnnotaionWorkController(RedisLockAnnotaionWorkService redisLockAnnotaionWorkService) {
+  public AnnotatedController(AnnotatedService annotatedService) {
 
-    this.redisLockAnnotaionWorkService = redisLockAnnotaionWorkService;
+    this.annotatedService = annotatedService;
   }
 
 
@@ -39,14 +40,14 @@ public class RedisLockAnnotaionWorkController {
   @RedisLock(route = "redis-lock", key = "#girlDTO.id", waitTime = 2000)
   @PostMapping("/retrant-lock")
   public String retrantLock(@RequestBody GirlDTO girlDTO) {
-    return redisLockAnnotaionWorkService.lockWithDto(girlDTO);
+    return annotatedService.lockWithDto(girlDTO);
   }
 
 
   @PostMapping("/save-with-unique-age")
   public void insertWithUniqueAge(GirlDTO girl) {
     Assert.notNull(girl.getAge(), "age must not be null");
-    redisLockAnnotaionWorkService.insertWithUniqueAge(girl);
+    annotatedService.insertWithUniqueAge(girl);
   }
 
 }

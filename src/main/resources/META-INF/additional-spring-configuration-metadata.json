@@ -28,6 +28,11 @@
       "name": "redis-lock.enable",
       "type": "java.lang.Boolean",
       "description": "Description for redis-lock.enable."
+    },
+    {
+      "name": "redisson.mode",
+      "type": "java.lang.String",
+      "description": "Description for redisson.mode."
     }
   ]
 }

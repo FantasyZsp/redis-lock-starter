@@ -1,2 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.sishu.redis.lock.annotation.RedissonConfig,\
-  com.sishu.redis.lock.annotation.RedissonLockSupportConfig
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.sishu.redis.lock.annotation.RedissonClientAutoConfig,\
+  com.sishu.redis.lock.annotation.RedisLockAnnotationSupportAutoConfig

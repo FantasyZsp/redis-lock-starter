@@ -1,4 +1,4 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.test;
 
 import com.sishu.redis.RootTest;
 import com.sishu.redis.lock.util.ThreadUtils;
@@ -148,7 +148,6 @@ public class RedissonLockTest extends RootTest {
     log.info("getLock后lock前值情况: {}", bucket.get());
 
     try {
-      // TODO 如何用缓存的方式拿到锁的值
       lock.lock(100, TimeUnit.SECONDS);
       RBucket<Object> bucket2 = redissonClient.getBucket(lockName);
       log.info("lock后值情况: {}", bucket2.get());

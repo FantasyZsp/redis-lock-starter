@@ -1,7 +1,8 @@
-package com.sishu.redis.lock.redission.string;
+package com.sishu.redis.test;
 
 import com.sishu.redis.RootTest;
 import com.sishu.redis.lock.redission.GirlDTO;
+import com.sishu.redis.lock.redission.business.AnnotatedStringListLock;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,24 +14,24 @@ import java.util.List;
 public class StringTest extends RootTest {
 
   @Autowired
-  private RedisLockAnnotationStringListLock redisLockAnnotationStringListLock;
+  private AnnotatedStringListLock annotatedStringListLock;
 
 
   @Test
   public void test() {
-    redisLockAnnotationStringListLock.multiKey("head", List.of("1", "222222222", "33333333333333"), "tail");
+    annotatedStringListLock.multiKey("head", List.of("1", "222222222", "33333333333333"), "tail");
     System.out.println();
   }
 
   @Test
   public void testFunction() {
-    redisLockAnnotationStringListLock.function(new GirlDTO(2, "cupSize", 1));
+    annotatedStringListLock.function(new GirlDTO(2, "cupSize", 1));
     System.out.println();
   }
 
   @Test
   public void testMultiConcatKey() {
-    redisLockAnnotationStringListLock.multiConcatKey("head", List.of("1", "222222222", "33333333333333"), "tail");
+    annotatedStringListLock.multiConcatKey("head", List.of("1", "222222222", "33333333333333"), "tail");
     System.out.println();
   }
 }

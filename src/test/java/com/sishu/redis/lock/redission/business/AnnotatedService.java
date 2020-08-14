@@ -1,6 +1,7 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.lock.redission.business;
 
 import com.sishu.redis.lock.annotation.RedisLock;
+import com.sishu.redis.lock.redission.GirlDTO;
 import com.sishu.redis.lock.util.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -18,7 +19,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class RedisLockAnnotaionWorkService {
+public class AnnotatedService {
   // age -> girlDto
   private static final Map<Integer, GirlDTO> DATABASES = new HashMap<>();
 

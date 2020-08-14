@@ -1,4 +1,4 @@
-package com.sishu.redis.lock.redission.string;
+package com.sishu.redis.lock.redission.business;
 
 import com.sishu.redis.lock.annotation.RedisLock;
 import com.sishu.redis.lock.redission.GirlDTO;
@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class RedisLockAnnotationStringListLock {
+public class AnnotatedStringListLock {
 
 
   // age -> girlDto
@@ -43,7 +43,7 @@ public class RedisLockAnnotationStringListLock {
   }
 
 
-  @RedisLock(key = "T(com.sishu.redis.lock.redission.string.RedisLockAnnotationStringListLock).concatKeys(#girls,#head,#tail,':')", exceptionMessage = "String test", waitTime = 0, exceptionClass = NullPointerException.class)
+  @RedisLock(key = "T(com.sishu.redis.lock.redission.business.RedisLockAnnotationStringListLock).concatKeys(#girls,#head,#tail,':')", exceptionMessage = "String test", waitTime = 0, exceptionClass = NullPointerException.class)
   public void multiConcatKey(String head, List<String> girls, String tail) {
     log.info("multiKey invoke...");
   }

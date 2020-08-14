@@ -1,6 +1,8 @@
-package com.sishu.redis.lock.redission;
+package com.sishu.redis.test;
 
 import com.sishu.redis.RootTest;
+import com.sishu.redis.lock.redission.GirlDTO;
+import com.sishu.redis.lock.redission.business.AnnotatedService;
 import com.sishu.redis.lock.util.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -20,9 +22,9 @@ import java.util.concurrent.TimeUnit;
  * @author ZSP
  */
 @Slf4j
-public class RedisLockAnnotaionWorkServiceTest extends RootTest {
+public class AnnotatedServiceTest extends RootTest {
   @Autowired
-  private RedisLockAnnotaionWorkService redisLockAnnotaionWorkService;
+  private AnnotatedService annotatedService;
   private static final Map<Integer, GirlDTO> TEMP_DATABASES = new HashMap<>();
 
   static {
@@ -34,13 +36,13 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
   @Test
   public void testMultiKey() {
     TEMP_DATABASES.put(4, new GirlDTO(4, "3", null));
-    redisLockAnnotaionWorkService.multiKey(List.copyOf(TEMP_DATABASES.values()));
+    annotatedService.multiKey(List.copyOf(TEMP_DATABASES.values()));
   }
 
   @Test
   public void testMultiKeyConcurrentOrdered() {
     TEMP_DATABASES.put(4, new GirlDTO(4, "3", null));
-    Runnable runnable = () -> redisLockAnnotaionWorkService.multiKey(List.copyOf(TEMP_DATABASES.values()));
+    Runnable runnable = () -> annotatedService.multiKey(List.copyOf(TEMP_DATABASES.values()));
     ThreadUtils.startAndJoin(new Thread(runnable, "T1"), 200);
     ThreadUtils.startAndJoin(new Thread(runnable, "T2"), 200);
     ThreadUtils.startAndJoin(new Thread(runnable, "T3"), 200);
@@ -51,7 +53,7 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
   @Test
   public void testMultiKeyConcurrent() {
     TEMP_DATABASES.put(4, new GirlDTO(4, "3", null));
-    Runnable runnable = () -> redisLockAnnotaionWorkService.multiKey(List.copyOf(TEMP_DATABASES.values()));
+    Runnable runnable = () -> annotatedService.multiKey(List.copyOf(TEMP_DATABASES.values()));
 
     ThreadUtils.start(new Thread(runnable, "T1"));
     ThreadUtils.start(new Thread(runnable, "T2"));
@@ -67,7 +69,7 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
     TEMP_DATABASES.put(4, new GirlDTO(4, "3", null));
 
     ExecutorService executorService = Executors.newFixedThreadPool(5);
-    Runnable runnable = () -> redisLockAnnotaionWorkService.multiKey(List.copyOf(TEMP_DATABASES.values()));
+    Runnable runnable = () -> annotatedService.multiKey(List.copyOf(TEMP_DATABASES.values()));
 
     executorService.submit(runnable);
     executorService.submit(runnable);
@@ -85,17 +87,17 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
 
   @Test
   public void testMultiKeyWithEmptyList() {
-    redisLockAnnotaionWorkService.multiKey(new ArrayList<>());
+    annotatedService.multiKey(new ArrayList<>());
   }
 
   @Test
   public void testMultiKeyWithNullList() {
-    redisLockAnnotaionWorkService.multiKey(null);
+    annotatedService.multiKey(null);
   }
 
   @Test
   public void testSpelConcat() {
-    redisLockAnnotaionWorkService.keyConcat(new GirlDTO().setId(1), new GirlDTO().setId(2));
+    annotatedService.keyConcat(new GirlDTO().setId(1), new GirlDTO().setId(2));
   }
 
   @Test
@@ -114,7 +116,7 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
       } catch (BrokenBarrierException e) {
         e.printStackTrace();
       }
-      redisLockAnnotaionWorkService.lockBusinessError("test_error");
+      annotatedService.lockBusinessError("test_error");
     };
     ThreadUtils.start(new Thread(runnable, "T1"));
     ThreadUtils.start(new Thread(runnable, "T2"));
@@ -141,7 +143,7 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
       } catch (BrokenBarrierException e) {
         e.printStackTrace();
       }
-      redisLockAnnotaionWorkService.tryLockWithRelease("test_error");
+      annotatedService.tryLockWithRelease("test_error");
     };
     ThreadUtils.start(new Thread(runnable, "T1"));
     ThreadUtils.start(new Thread(runnable, "T2"));
@@ -166,7 +168,7 @@ public class RedisLockAnnotaionWorkServiceTest extends RootTest {
       } catch (InterruptedException | BrokenBarrierException e) {
         e.printStackTrace();
       }
-      redisLockAnnotaionWorkService.lockWithRelease("lockWithRelease");
+      annotatedService.lockWithRelease("lockWithRelease");
     };
     ThreadUtils.start(new Thread(runnable, "T1"));
     ThreadUtils.start(new Thread(runnable, "T2"));
