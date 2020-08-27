@@ -14,6 +14,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Constructor;
@@ -52,14 +53,15 @@ public class RedisLockAspect implements Ordered {
   @Around("redisLockPointCut()")
   public Object redisLockAround(ProceedingJoinPoint pjp) throws Throwable {
     Method targetMethod = this.getTargetMethod(pjp);
-    RedisLock annotation = targetMethod.getAnnotation(RedisLock.class);
+    RedisLock annotation = AnnotationUtils.findAnnotation(targetMethod, RedisLock.class);
 
-    String route = annotation.route();
+    Objects.requireNonNull(annotation);
+    String prefix = annotation.prefix();
     String keySpel = annotation.key();
     Object lockKey = SpelExpressionParserUtils.generateKeyByEl(keySpel, pjp);
 
     Object result;
-    List<RLock> lockList = getLockList(route, lockKey);
+    List<RLock> lockList = getLockList(prefix, lockKey);
     boolean lockSuccess = false;
     try {
       lockBatch(annotation, lockList);
@@ -106,8 +108,8 @@ public class RedisLockAspect implements Ordered {
   }
 
 
-  private List<RLock> getLockList(String route, Object lockKey) {
-    return getLockList(appendLockNameList(route, lockKey));
+  private List<RLock> getLockList(String prefix, Object lockKey) {
+    return getLockList(appendLockNameList(prefix, lockKey));
   }
 
   private List<RLock> getLockList(List<String> lockNameList) {
@@ -206,23 +208,23 @@ public class RedisLockAspect implements Ordered {
 
   }
 
-  private String appendLockName(String route, Object lockKey) {
+  private String appendLockName(String prefix, Object lockKey) {
     Assert.notNull(lockKey, "must not be null");
     if (lockKey instanceof String) {
       Assert.hasText((String) lockKey, "must not be empty");
     }
 
-    return NAME_SPACE + route + lockKey;
+    return NAME_SPACE + prefix + lockKey;
   }
 
-  private List<String> appendLockNameList(String route, Object lockKey) {
+  private List<String> appendLockNameList(String prefix, Object lockKey) {
     Assert.notNull(lockKey, "must not be null");
     if (lockKey instanceof String) {
       Assert.hasText((String) lockKey, "must not be empty");
     }
 
-    if (StringUtils.isNotBlank(route)) {
-      route = route + SEPARATOR;
+    if (StringUtils.isNotBlank(prefix)) {
+      prefix = prefix + SEPARATOR;
     }
 
     List<String> lockNameList = new ArrayList<>(objectLength(lockKey));
@@ -236,10 +238,10 @@ public class RedisLockAspect implements Ordered {
         .collect(Collectors.toCollection(ArrayList::new));
 
       for (Object key : (Collection<?>) lockKey) {
-        lockNameList.add(appendLockName(route, key));
+        lockNameList.add(appendLockName(prefix, key));
       }
     } else {
-      lockNameList.add(appendLockName(route, lockKey));
+      lockNameList.add(appendLockName(prefix, lockKey));
     }
     return lockNameList;
   }

@@ -31,13 +31,13 @@ public class AnnotatedStringListLock {
   }
 
 
-  @RedisLock(key = "#girls.concat(#tail)", exceptionMessage = "String test", waitTime = 0, exceptionClass = NullPointerException.class)
+  @RedisLock(key = "#girls", exceptionMessage = "String test", waitTime = 0, exceptionClass = NullPointerException.class)
   public void multiKey(String head, List<String> girls, String tail) {
     log.info("multiKey invoke...");
   }
 
 
-  @RedisLock(route = "redis-lock", key = "#girl1.hasId('#girl1.id')", waitTime = 0)
+  @RedisLock(route = "redis-lock", prefix = "222", key = "#girl1.hasId(#girl1.id)", waitTime = 0)
   public String function(GirlDTO girl1) {
     return "success";
   }

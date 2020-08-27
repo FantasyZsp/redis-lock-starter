@@ -1,5 +1,7 @@
 package com.sishu.redis.lock.annotation;
 
+import org.springframework.core.annotation.AliasFor;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,7 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 单机分布式锁
- * 事务提交后释放锁
+ * 基于AOP， 对于同个方法的注解，总会优先于事务注解开始，在事务提交后释放锁
+ * 如果外层已经开始事务，则无法使锁免于事务隔离的影响，使用方需要注意
  *
  * @author ZSP
  */
@@ -21,8 +24,19 @@ public @interface RedisLock {
   /**
    * 功能模块或者资源类别，用于细化锁的粒度，拼接在key前面
    * route:key
+   * 属性命名，容易引起歧义，推荐使用 prefix
    */
+  @AliasFor("prefix")
+  @Deprecated
   String route() default "";
+
+  /**
+   * key前缀，用于区分key命名空间，拼接在key前面
+   * prefix:key
+   * 替代原有route
+   */
+  @AliasFor("route")
+  String prefix() default "";
 
   /**
    * 键主体，粒度参考mysql innodb行锁。当粒度过大时影响并发。
