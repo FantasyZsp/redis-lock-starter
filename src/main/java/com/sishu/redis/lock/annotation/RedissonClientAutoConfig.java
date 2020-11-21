@@ -28,11 +28,11 @@ import org.springframework.context.annotation.DependsOn;
  */
 @Configuration
 @ConditionalOnClass(RedissonClient.class)
-@Slf4j
 public class RedissonClientAutoConfig {
 
   @Configuration
   @ConditionalOnProperty(prefix = "redisson", name = "mode", havingValue = "single")
+  @Slf4j
   static class SingleServerClientConfig {
     @Bean
     @ConditionalOnMissingBean(Config.class)
