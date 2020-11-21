@@ -110,10 +110,4 @@
             </plugin>
         </plugins>
     </build>
-    <distributionManagement>
-        <repository>
-            <id>maven-releases</id>
-            <url>http://nexus.sishuxuefu.com:38020/repository/maven-releases/</url>
-        </repository>
-    </distributionManagement>
 </project>
