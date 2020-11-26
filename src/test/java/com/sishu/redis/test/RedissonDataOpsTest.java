@@ -1,7 +1,7 @@
 package com.sishu.redis.test;
 
 import com.sishu.redis.RootTest;
-import com.sishu.redis.lock.redission.GirlDTO;
+import com.sishu.redis.lock.redisson.GirlDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Before;

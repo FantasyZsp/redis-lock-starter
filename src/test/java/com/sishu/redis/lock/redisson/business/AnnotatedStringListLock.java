@@ -1,7 +1,7 @@
-package com.sishu.redis.lock.redission.business;
+package com.sishu.redis.lock.redisson.business;
 
 import com.sishu.redis.lock.annotation.RedisLock;
-import com.sishu.redis.lock.redission.GirlDTO;
+import com.sishu.redis.lock.redisson.GirlDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +36,11 @@ public class AnnotatedStringListLock {
     log.info("multiKey invoke...");
   }
 
+  @RedisLock(key = "constantKey", exceptionMessage = "String test", waitTime = 0)
+  public void constantKey(String text) {
+    log.info("constantKey invoke...");
+  }
+
 
   @RedisLock(route = "redis-lock", prefix = "222", key = "#girl1.hasId(#girl1.id)", waitTime = 0)
   public String function(GirlDTO girl1) {
@@ -43,7 +48,7 @@ public class AnnotatedStringListLock {
   }
 
 
-  @RedisLock(key = "T(com.sishu.redis.lock.redission.business.RedisLockAnnotationStringListLock).concatKeys(#girls,#head,#tail,':')", exceptionMessage = "String test", waitTime = 0, exceptionClass = NullPointerException.class)
+  @RedisLock(key = "T(com.sishu.redis.lock.redisson.business.AnnotatedStringListLock).concatKeys(#girls,#head,#tail,':')", exceptionMessage = "String test", waitTime = 0, exceptionClass = NullPointerException.class)
   public void multiConcatKey(String head, List<String> girls, String tail) {
     log.info("multiKey invoke...");
   }

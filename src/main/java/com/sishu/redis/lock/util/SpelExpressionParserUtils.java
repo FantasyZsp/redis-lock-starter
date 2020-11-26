@@ -17,19 +17,30 @@ public class SpelExpressionParserUtils {
   /**
    * 用于SpEL表达式解析.
    */
-  private static SpelExpressionParser parser = new SpelExpressionParser();
+  private static final SpelExpressionParser PARSER = new SpelExpressionParser();
   /**
    * 用于获取方法参数定义名字.
    */
-  private static DefaultParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
+  private static final DefaultParameterNameDiscoverer NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
+
+  /**
+   * 解析标识。
+   * 当 expressionString 以 # 开始时表名需要进行解析
+   */
+  private static final String DEFAULT_SPEL_FLAG_CHAR = "#";
 
   public static Object generateKeyByEl(String expressionString, ProceedingJoinPoint joinPoint) {
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
-    String[] paramNames = nameDiscoverer.getParameterNames(methodSignature.getMethod());
-    if (null == paramNames || paramNames.length == 0) {
+    String[] paramNames = NAME_DISCOVERER.getParameterNames(methodSignature.getMethod());
+    if (null == paramNames
+      || paramNames.length == 0
+      || expressionString == null
+      || expressionString.length() == 1
+      || !expressionString.startsWith(DEFAULT_SPEL_FLAG_CHAR)
+    ) {
       return expressionString;
     }
-    Expression expression = parser.parseExpression(expressionString);
+    Expression expression = PARSER.parseExpression(expressionString);
     EvaluationContext context = new StandardEvaluationContext();
     Object[] args = joinPoint.getArgs();
     for (int i = 0; i < args.length; i++) {

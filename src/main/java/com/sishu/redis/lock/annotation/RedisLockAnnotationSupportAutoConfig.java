@@ -20,8 +20,8 @@ import org.springframework.context.annotation.Configuration;
 public class RedisLockAnnotationSupportAutoConfig {
 
   @Bean(initMethod = "init")
-  public RedisLockAspect redisLockAspect(RedissonClient redissonClient) {
-    RedisLockAspect redisLockAspect = new RedisLockAspect();
+  public RepeatableRedisLockAspect redisLockAspect(RedissonClient redissonClient) {
+    RepeatableRedisLockAspect redisLockAspect = new RepeatableRedisLockAspect();
     redisLockAspect.setRedissonClient(redissonClient);
     return redisLockAspect;
   }

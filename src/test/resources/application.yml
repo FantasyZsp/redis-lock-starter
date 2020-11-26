@@ -7,4 +7,4 @@ redis-lock:
   enable: true
 logging:
   level:
-    com.sishu.redis.lock.annotation.RedisLockAspect: debug
+    com.sishu.redis.lock.annotation.RepeatableRedisLockAspect: debug

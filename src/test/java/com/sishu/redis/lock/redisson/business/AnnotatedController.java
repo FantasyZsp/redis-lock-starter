@@ -1,7 +1,7 @@
-package com.sishu.redis.lock.redission.business;
+package com.sishu.redis.lock.redisson.business;
 
 import com.sishu.redis.lock.annotation.RedisLock;
-import com.sishu.redis.lock.redission.GirlDTO;
+import com.sishu.redis.lock.redisson.GirlDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PostMapping;

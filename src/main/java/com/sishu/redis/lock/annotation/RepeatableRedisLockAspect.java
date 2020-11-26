@@ -26,19 +26,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * 拦截RedisLock注解方法切面
- * <p>
- * 排他可重入
+ * process {@link RedisLocks} and {@link RedisLock}
  *
  * @author ZSP
  */
 @Aspect
 @Slf4j
-public class RedisLockAspect implements Ordered {
+public class RepeatableRedisLockAspect implements Ordered {
 
   private static final String NAME_SPACE = "RL:";
   private static final String SEPARATOR = ":";
@@ -46,25 +45,24 @@ public class RedisLockAspect implements Ordered {
   private RedissonClient redissonClient;
 
 
-  @Pointcut("@annotation(com.sishu.redis.lock.annotation.RedisLock)")
-  public void redisLockPointCut() {
+  @Pointcut("@annotation(com.sishu.redis.lock.annotation.RedisLock)||@annotation(com.sishu.redis.lock.annotation.RedisLocks)")
+  public void redisLocksPointCut() {
   }
 
-  @Around("redisLockPointCut()")
-  public Object redisLockAround(ProceedingJoinPoint pjp) throws Throwable {
+  @Around("redisLocksPointCut()")
+  public Object redisLocksAround(ProceedingJoinPoint pjp) throws Throwable {
     Method targetMethod = this.getTargetMethod(pjp);
-    RedisLock annotation = AnnotationUtils.findAnnotation(targetMethod, RedisLock.class);
+    // linkedHashSet
+    Set<RedisLock> annotations = AnnotationUtils.getDeclaredRepeatableAnnotations(targetMethod, RedisLock.class);
 
-    Objects.requireNonNull(annotation);
-    String prefix = annotation.prefix();
-    String keySpel = annotation.key();
-    Object lockKey = SpelExpressionParserUtils.generateKeyByEl(keySpel, pjp);
+    Objects.requireNonNull(annotations);
+
+    List<RedissonLockHolder> lockListSortedByGroup = getSortedLockListByGroup(annotations, pjp);
 
     Object result;
-    List<RLock> lockList = getLockList(prefix, lockKey);
     boolean lockSuccess = false;
     try {
-      lockBatch(annotation, lockList);
+      lockBatch(lockListSortedByGroup);
       lockSuccess = true;
       log.debug("lock batch success");
       // do business or next aspect
@@ -78,44 +76,70 @@ public class RedisLockAspect implements Ordered {
       }
       throw e;
     } finally {
-      // mark 解决 重入情况下会直接释放锁而不是减重入次数。
-      // 当加锁失败时，需要注意是否需要解锁
+      // Unlock when lock success. Doing by this way can avoid to unlock again when lock ex, which unlock already at that time.
       if (lockSuccess) {
-        unlockBatch(annotation, lockList);
+        unlockBatch(lockListSortedByGroup);
       }
     }
     return result;
   }
 
-  private void unlockBatch(RedisLock annotation, List<RLock> lockList) {
+  /**
+   * @return lock holders that sorted by {@link RedisLock#order()}, using annotation declaring sort when unset.
+   */
+  private List<RedissonLockHolder> getSortedLockListByGroup(Set<RedisLock> annotations, ProceedingJoinPoint pjp) {
+    List<RedissonLockHolder> sortedLockListByGroup = new ArrayList<>();
+
+    ArrayList<RedisLock> sortedRedisLockAnnotation = new ArrayList<>(annotations);
+    // sort by order that user setting
+    sortedRedisLockAnnotation.sort(Comparator.comparing(RedisLock::order));
+
+    for (RedisLock annotation : sortedRedisLockAnnotation) {
+      String prefix = annotation.prefix();
+      String keySpel = annotation.key();
+      Object lockKey = SpelExpressionParserUtils.generateKeyByEl(keySpel, pjp);
+      List<RLock> lockListSortedByName = getLockListSortedByName(prefix, lockKey);
+
+      List<RedissonLockHolder> list = new ArrayList<>();
+      for (RLock lock : lockListSortedByName) {
+        RedissonLockHolderImpl redissonLockHolderImpl = new RedissonLockHolderImpl(lock, annotation);
+        list.add(redissonLockHolderImpl);
+      }
+      sortedLockListByGroup.addAll(list);
+    }
+
+    return sortedLockListByGroup;
+  }
+
+  private void unlockBatch(List<RedissonLockHolder> lockList) {
     if (CollectionUtils.isEmpty(lockList)) {
       return;
     }
 
-    boolean releaseSyncMode = annotation.leaseTime() == -1;
-
-    // 逆序解锁
-    lockList.sort(Comparator.comparing(RLock::getName).reversed());
-    for (RLock rLock : lockList) {
-      log.debug("解锁: {}, unlock mode: {}", rLock.getName(), releaseSyncMode ? "sync" : "async");
-      if (releaseSyncMode) {
-        rLock.unlock();
+    // unlock revered with unsorted calculate
+    int size = lockList.size();
+    for (int i = size - 1; i >= 0; i--) {
+      RedissonLockHolder lockHolder = lockList.get(i);
+      log.debug("unlock: {}, unlock mode: {}", lockHolder.getLockName(), lockHolder.useSyncReleaseMode() ? "sync" : "async");
+      if (lockHolder.useSyncReleaseMode()) {
+        lockHolder.getLock().unlock();
       } else {
         // no care ex when unlock
-        rLock.unlockAsync();
+        lockHolder.getLock().unlockAsync();
       }
     }
+
   }
 
 
-  private List<RLock> getLockList(String prefix, Object lockKey) {
-    return getLockList(appendLockNameList(prefix, lockKey));
+  private List<RLock> getLockListSortedByName(String prefix, Object lockKey) {
+    return getLockListSortedByName(appendLockNameList(prefix, lockKey));
   }
 
-  private List<RLock> getLockList(List<String> lockNameList) {
+  private List<RLock> getLockListSortedByName(List<String> lockNameList) {
     Assert.notNull(lockNameList, "must not be null");
     List<RLock> rLockList = new ArrayList<>(lockNameList.size());
-    // 顺序加锁防死锁
+    // sort name to avoid deadlock
     Collections.sort(lockNameList);
     for (String lockName : lockNameList) {
       rLockList.add(redissonClient.getLock(lockName));
@@ -123,23 +147,27 @@ public class RedisLockAspect implements Ordered {
     return rLockList;
   }
 
-  /**
-   * 当批量加锁失败时，需要释放已加的锁
-   */
-  private void lockBatch(RedisLock annotation, List<RLock> lockList) throws Exception {
+  private void lockBatch(List<RedissonLockHolder> lockList) throws Exception {
     if (CollectionUtils.isEmpty(lockList)) {
       return;
     }
-    boolean releaseSyncMode = annotation.leaseTime() == -1;
+
+    if (log.isWarnEnabled() && lockList.size() > 1) {
+      RedissonLockHolder secondLockHolder = lockList.get(1);
+      boolean waitForeverSomeTime = secondLockHolder.getAnnotation().waitTime() < 0;
+      if (waitForeverSomeTime) {
+        log.warn("WARNING!!!The second lock [{}] is not set waitTime when use lock-composed mode, maybe deadlock ", secondLockHolder.getLockName());
+      }
+    }
 
     List<RLock> successList = new ArrayList<>(lockList.size());
-    for (RLock rLock : lockList) {
+    for (RedissonLockHolder lockHolder : lockList) {
       try {
-        lock(annotation, rLock.getName(), rLock);
-        successList.add(rLock);
+        lock(lockHolder);
+        successList.add(lockHolder.getLock());
       } catch (Exception e) {
         log.debug("release locks when lock ex： {}", successList);
-        if (releaseSyncMode) {
+        if (lockHolder.useSyncReleaseMode()) {
           successList.forEach(RLock::unlock);
         } else {
           // no care ex when unlock
@@ -151,23 +179,28 @@ public class RedisLockAspect implements Ordered {
   }
 
 
-  private void lock(RedisLock redisLock, String lockName, RLock lock) throws Exception {
+  private void lock(RedissonLockHolder lockHolder) throws Exception {
+
+    RedisLock redisLock = lockHolder.getAnnotation();
+
     long waitTime = redisLock.waitTime();
     boolean waitForeverWhenHeldByOtherThread = waitTime < 0;
+
     long leaseTime = redisLock.leaseTime();
     TimeUnit timeUnit = redisLock.timeUnit();
     Class<?> exceptionClass = redisLock.exceptionClass();
     String exceptionMessage = redisLock.exceptionMessage();
 
-    log.debug("attempt to lock: {}", lockName);
+    RLock lock = lockHolder.getLock();
+    String lockName = lock.getName();
 
+    log.debug("attempt to lock: {}", lockName);
 
     // 预期内的上锁结果，代指无论上锁成功与否都没有抛出代码本身异常。预期外的结果如解锁错误，寻址可用服务错误，系统error等。
     boolean lockResultExpected = true;
     Throwable throwable = null;
 
     if (waitForeverWhenHeldByOtherThread) {
-
       try {
         lock.lock(leaseTime, timeUnit);
         log.debug("lock success: {}", lockName);
@@ -176,19 +209,17 @@ public class RedisLockAspect implements Ordered {
         throwable = ex;
         log.error("lock failed unexpected, lockName: {}, error reason:{}", lockName, ex.getMessage());
       }
-
     } else {
-
-      boolean getLock = true;
+      boolean lockSuccess = true;
       try {
-        getLock = lock.tryLock(waitTime, leaseTime, timeUnit);
+        lockSuccess = lock.tryLock(waitTime, leaseTime, timeUnit);
       } catch (Throwable ex) {
         lockResultExpected = false;
         throwable = ex;
         log.error("try lock failed unexpected, lockName: {}, error reason:{}", lockName, ex.getMessage());
       }
 
-      if (!getLock) {
+      if (!lockSuccess) {
         Constructor<?> constructor = exceptionClass.getConstructor(String.class);
         RuntimeException exception = (RuntimeException) constructor.newInstance(exceptionMessage);
         log.error("try lock failed: {}", lockName);
@@ -198,7 +229,7 @@ public class RedisLockAspect implements Ordered {
       }
     }
 
-    // 包装并抛出预期外错误
+    // throw an unexpected ex
     if (!lockResultExpected) {
       log.debug("unexpected ex when redis lock working, lockName: {}", lockName, throwable);
       Constructor<?> constructor = exceptionClass.getConstructor(String.class);
@@ -263,9 +294,6 @@ public class RedisLockAspect implements Ordered {
   }
 
 
-  /**
-   * 获取目标方法
-   */
   private Method getTargetMethod(ProceedingJoinPoint pjp) throws NoSuchMethodException {
     Signature signature = pjp.getSignature();
     MethodSignature methodSignature = (MethodSignature) signature;
@@ -283,6 +311,6 @@ public class RedisLockAspect implements Ordered {
   }
 
   public void init() {
-    log.info("RedisLockAspect init...");
+    log.info("RepeatableRedisLockAspect init...");
   }
 }

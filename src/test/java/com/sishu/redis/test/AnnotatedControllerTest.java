@@ -1,8 +1,8 @@
 package com.sishu.redis.test;
 
 import com.sishu.redis.RootTest;
-import com.sishu.redis.lock.redission.GirlDTO;
-import com.sishu.redis.lock.redission.business.AnnotatedController;
+import com.sishu.redis.lock.redisson.GirlDTO;
+import com.sishu.redis.lock.redisson.business.AnnotatedController;
 import com.sishu.redis.lock.util.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
