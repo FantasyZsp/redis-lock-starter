@@ -23,20 +23,13 @@ public class SpelExpressionParserUtils {
    */
   private static final DefaultParameterNameDiscoverer NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
-  /**
-   * 解析标识。
-   * 当 expressionString 以 # 开始时表名需要进行解析
-   */
-  private static final String DEFAULT_SPEL_FLAG_CHAR = "#";
 
   public static Object generateKeyByEl(String expressionString, ProceedingJoinPoint joinPoint) {
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     String[] paramNames = NAME_DISCOVERER.getParameterNames(methodSignature.getMethod());
     if (null == paramNames
       || paramNames.length == 0
-      || expressionString == null
-      || expressionString.length() == 1
-      || !expressionString.startsWith(DEFAULT_SPEL_FLAG_CHAR)
+      || null == expressionString
     ) {
       return expressionString;
     }
