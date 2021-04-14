@@ -1,8 +1,7 @@
-# redis-lock
+# redis-lock-starter
 
 #### 介绍
-redis-client应用demo
-1. 自定义注解实现基于redis的分布式锁
+自定义注解实现基于redis的分布式锁
 
 #### 使用说明
 
@@ -31,4 +30,8 @@ redis-client应用demo
 2. 修复有参数列表时常量key的错误
 
 #### TODO
-1. 支持基于redis集群的锁功能
+1. ~~支持基于redis集群的锁功能~~
+    - 不考虑支持集群形式的锁
+2. 支持自定义异常
+    - 如异常类的构造逻辑特殊，用户指定bean自定义处理。
+3. 重构以支持不同的实现，如zk
