@@ -1,5 +1,7 @@
 package com.sishu.redis.lock.annotation;
 
+import com.sishu.redis.lock.support.exception.DefaultExceptionTag;
+import com.sishu.redis.lock.support.exception.ExceptionTag;
 import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.Documented;
@@ -75,4 +77,8 @@ public @interface RedisLock {
    * 注解间排序顺序。默认都是0，即默认将会按照声明的顺序依次处理注解内部key。
    */
   int order() default 0;
+
+  Class<? extends ExceptionTag> exceptionTag() default DefaultExceptionTag.class;
+
+  String exceptionTagName() default "";
 }

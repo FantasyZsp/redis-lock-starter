@@ -1,6 +1,8 @@
 package com.sishu.redis.lock.annotation;
 
+import com.sishu.redis.lock.support.exception.ExceptionSupplier;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,10 +21,13 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnBean(RedissonClient.class)
 public class RedisLockAnnotationSupportAutoConfig {
 
+
   @Bean(initMethod = "init")
-  public RepeatableRedisLockAspect redisLockAspect(RedissonClient redissonClient) {
+  public RepeatableRedisLockAspect redisLockAspect(RedissonClient redissonClient,
+                                                   ObjectProvider<ExceptionSupplier> exceptionSupplier) {
     RepeatableRedisLockAspect redisLockAspect = new RepeatableRedisLockAspect();
     redisLockAspect.setRedissonClient(redissonClient);
+    exceptionSupplier.forEach(redisLockAspect::addExceptionSupplier);
     return redisLockAspect;
   }
 }

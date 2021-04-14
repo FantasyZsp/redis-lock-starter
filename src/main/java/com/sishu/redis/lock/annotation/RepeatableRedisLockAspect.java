@@ -1,5 +1,8 @@
 package com.sishu.redis.lock.annotation;
 
+import com.sishu.redis.lock.support.exception.DefaultExceptionSupplier;
+import com.sishu.redis.lock.support.exception.ExceptionSupplier;
+import com.sishu.redis.lock.support.exception.ExceptionTag;
 import com.sishu.redis.lock.util.SpelExpressionParserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,7 +20,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -43,7 +46,8 @@ public class RepeatableRedisLockAspect implements Ordered {
   private static final String SEPARATOR = ":";
 
   private RedissonClient redissonClient;
-
+  private Map<Class<? extends ExceptionTag>, ExceptionSupplier> exceptionSupplierMap = new ConcurrentHashMap<>();
+  private static final ExceptionSupplier defaultExceptionSupplier = new DefaultExceptionSupplier();
 
   @Pointcut("@annotation(com.sishu.redis.lock.annotation.RedisLock)||@annotation(com.sishu.redis.lock.annotation.RedisLocks)")
   public void redisLocksPointCut() {
@@ -220,23 +224,25 @@ public class RepeatableRedisLockAspect implements Ordered {
       }
 
       if (!lockSuccess) {
-        Constructor<?> constructor = exceptionClass.getConstructor(String.class);
-        RuntimeException exception = (RuntimeException) constructor.newInstance(exceptionMessage);
         log.error("try lock failed: {}", lockName);
-        throw exception;
+        throw newInstance(redisLock);
       } else {
         log.debug("try lock success: {}", lockName);
       }
     }
 
-    // throw an unexpected ex
+    // throw an unexpected ex, but force wrap as business
     if (!lockResultExpected) {
       log.debug("unexpected ex when redis lock working, lockName: {}", lockName, throwable);
-      Constructor<?> constructor = exceptionClass.getConstructor(String.class);
-      throw (RuntimeException) constructor.newInstance(exceptionMessage);
+      throw newInstance(redisLock);
     }
 
 
+  }
+
+  private RuntimeException newInstance(RedisLock redisLock) throws Exception {
+    ExceptionSupplier exceptionSupplier = this.exceptionSupplierMap.getOrDefault(redisLock.exceptionTag(), defaultExceptionSupplier);
+    return exceptionSupplier.newException(redisLock);
   }
 
   private String appendLockName(String prefix, Object lockKey) {
@@ -303,6 +309,19 @@ public class RepeatableRedisLockAspect implements Ordered {
 
   public void setRedissonClient(RedissonClient redissonClient) {
     this.redissonClient = redissonClient;
+  }
+
+  public void setExceptionSupplierMap(Map<Class<? extends ExceptionTag>, ExceptionSupplier> exceptionSupplierMap) {
+    this.exceptionSupplierMap.putAll(exceptionSupplierMap);
+  }
+
+  public void addExceptionSupplier(ExceptionSupplier exceptionSupplier) {
+    for (Class<? extends ExceptionTag> exceptionTagClass : exceptionSupplier.supportedList()) {
+      ExceptionSupplier old = exceptionSupplierMap.putIfAbsent(exceptionTagClass, exceptionSupplier);
+      if (old != null) {
+        throw new IllegalStateException("Duplicated ExceptionSupplier for exceptionTagClass " + exceptionTagClass.getSimpleName());
+      }
+    }
   }
 
   @Override

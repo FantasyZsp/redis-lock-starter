@@ -1,7 +1,10 @@
 package com.sishu.redis.lock.redisson.business;
 
+import com.sishu.redis.base.exception.AuthError;
+import com.sishu.redis.base.exception.AuthErrorException;
 import com.sishu.redis.lock.annotation.RedisLock;
 import com.sishu.redis.lock.redisson.GirlDTO;
+import com.sishu.redis.lock.util.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +68,13 @@ public class AnnotatedStringListLock {
       list.add(key);
     }
     return list;
+  }
+
+  @RedisLock(key = "#name", exceptionMessage = "String test", waitTime = 0,
+    exceptionClass = AuthErrorException.class, exceptionTag = AuthError.class, exceptionTagName = "EXPIRED")
+  public void base(String name) {
+    ThreadUtils.sleepSeconds(1);
+    log.info("base invoke...");
   }
 
 
