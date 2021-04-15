@@ -82,11 +82,11 @@ public @interface RedisLock {
   /**
    * 为自定义异常提供标识。一般使用标记接口或者异常类型，可能会作为异常的构造函数之一，取决于 {@link ExceptionSupplier}的业务实现
    */
-  Class<? extends ExceptionTag> exceptionTag() default DefaultExceptionTag.class;
+  Class<? extends ExceptionTag> exTag() default DefaultExceptionTag.class;
 
   /**
    * 提供名称以获取ExceptionTag实例。
    * 注意处理默认值和用户配置导致的异常。
    */
-  String exceptionTagName() default "";
+  String exTagName() default "";
 }

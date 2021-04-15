@@ -7,7 +7,9 @@ import java.lang.reflect.Constructor;
 /**
  * @author ZSP
  */
-public class DefaultExceptionSupplier implements ExceptionSupplier {
+public final class DefaultExceptionSupplier implements ExceptionSupplier {
+
+  public static DefaultExceptionSupplier INSTANT = new DefaultExceptionSupplier();
 
   @Override
   public RuntimeException newException(RedisLock redisLock) throws Exception {

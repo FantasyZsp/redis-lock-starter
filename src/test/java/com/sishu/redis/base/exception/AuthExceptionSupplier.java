@@ -20,13 +20,13 @@ public class AuthExceptionSupplier implements ExceptionSupplier {
   public RuntimeException newException(RedisLock redisLock) throws Exception {
 
     String exceptionMessage = redisLock.exceptionMessage();
-    AuthError authError = AuthError.valueOf(redisLock.exceptionTagName());
+    AuthError authError = AuthError.valueOf(redisLock.exTagName());
     if (redisLockDefaultExMsg.equals(exceptionMessage)) {
       // 按需处理默认消息
       exceptionMessage = authError.getInfo();
     }
 
-    Constructor<?> constructor = redisLock.exceptionClass().getConstructor(redisLock.exceptionTag(), String.class);
+    Constructor<?> constructor = redisLock.exceptionClass().getConstructor(redisLock.exTag(), String.class);
     return (RuntimeException) constructor.newInstance(authError, exceptionMessage);
   }
 

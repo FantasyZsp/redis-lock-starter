@@ -47,7 +47,7 @@ public class RepeatableRedisLockAspect implements Ordered {
 
   private RedissonClient redissonClient;
   private Map<Class<? extends ExceptionTag>, ExceptionSupplier> exceptionSupplierMap = new ConcurrentHashMap<>();
-  private static final ExceptionSupplier defaultExceptionSupplier = new DefaultExceptionSupplier();
+  private static final ExceptionSupplier defaultExceptionSupplier = DefaultExceptionSupplier.INSTANT;
 
   @Pointcut("@annotation(com.sishu.redis.lock.annotation.RedisLock)||@annotation(com.sishu.redis.lock.annotation.RedisLocks)")
   public void redisLocksPointCut() {
@@ -241,7 +241,7 @@ public class RepeatableRedisLockAspect implements Ordered {
   }
 
   private RuntimeException newInstance(RedisLock redisLock) throws Exception {
-    ExceptionSupplier exceptionSupplier = this.exceptionSupplierMap.getOrDefault(redisLock.exceptionTag(), defaultExceptionSupplier);
+    ExceptionSupplier exceptionSupplier = this.exceptionSupplierMap.getOrDefault(redisLock.exTag(), defaultExceptionSupplier);
     return exceptionSupplier.newException(redisLock);
   }
 

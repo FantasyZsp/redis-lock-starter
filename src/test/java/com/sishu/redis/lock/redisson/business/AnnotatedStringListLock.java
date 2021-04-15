@@ -71,7 +71,7 @@ public class AnnotatedStringListLock {
   }
 
   @RedisLock(key = "#name", exceptionMessage = "String test", waitTime = 0,
-    exceptionClass = AuthErrorException.class, exceptionTag = AuthError.class, exceptionTagName = "EXPIRED")
+    exceptionClass = AuthErrorException.class, exTag = AuthError.class, exTagName = "EXPIRED")
   public void base(String name) {
     ThreadUtils.sleepSeconds(1);
     log.info("base invoke...");
