@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 /**
+ * spEL各种写法搭配@RedisLock注解的加锁效果测试
+ *
  * @author ZSP
  */
 public class StringTest extends RootTest {
