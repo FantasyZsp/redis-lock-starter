@@ -30,6 +30,16 @@ public class StringTest extends RootTest {
   }
 
   @Test
+  public void collectionFieldKey() {
+    AnnotatedStringListLock.ClassRoom classRoom = new AnnotatedStringListLock.ClassRoom();
+    annotatedStringListLock.collectionFieldKey(classRoom);
+    classRoom.setGirlIds(List.of("1", "2", "3"));
+    annotatedStringListLock.collectionFieldKey(classRoom);
+    System.out.println();
+  }
+
+
+  @Test
   public void testMultiConcatKey() {
     annotatedStringListLock.multiConcatKey("head", List.of("1", "222222222", "33333333333333"), "tail");
     System.out.println();

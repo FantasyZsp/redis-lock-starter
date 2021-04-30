@@ -2,6 +2,7 @@ package com.sishu.redis.lock.redisson.business;
 
 import com.sishu.redis.lock.annotation.RedisLock;
 import com.sishu.redis.lock.redisson.GirlDTO;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,11 @@ public class AnnotatedStringListLock {
     log.info("multiKey invoke...");
   }
 
+  @RedisLock(key = "#room.girlIds", exceptionMessage = "collectionFieldKey")
+  public void collectionFieldKey(ClassRoom room) {
+    log.info("collectionFieldKey invoke...");
+  }
+
   @RedisLock(key = "constantKey", exceptionMessage = "String test", waitTime = 0)
   public void constantKey(String text) {
     log.info("constantKey invoke...");
@@ -53,7 +59,8 @@ public class AnnotatedStringListLock {
     log.info("multiKey invoke...");
   }
 
-  public static List<String> concatKeys(Collection<String> keysWrapper, String head, String tail, CharSequence charSequence) {
+  public static List<String> concatKeys(Collection<String> keysWrapper, String head, String tail, CharSequence
+    charSequence) {
     charSequence = charSequence == null ? "" : charSequence;
 
     head = head == null ? "" : head;
@@ -67,5 +74,9 @@ public class AnnotatedStringListLock {
     return list;
   }
 
+  @Data
+  public static class ClassRoom {
+    List<String> girlIds = new ArrayList<>();
+  }
 
 }
