@@ -48,6 +48,13 @@ public class StringTest extends RootTest {
   }
 
   @Test
+  public void testMultiConcatKeyWithStringOrLong() {
+    annotatedStringListLock.multiConcatKeyWithString("head", List.of("1", "222222222", "33333333333333"), "tail");
+    annotatedStringListLock.multiConcatKeyWithLong(1L, 2L);
+    System.out.println();
+  }
+
+  @Test
   public void testConstantKey() {
     annotatedStringListLock.constantKey("test");
     System.out.println();

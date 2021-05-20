@@ -64,6 +64,16 @@ public class AnnotatedStringListLock {
     log.info("multiKey invoke...");
   }
 
+  @RedisLock(key = "#head.concat(#tail)", exceptionMessage = "multiConcatKeyWithString ex")
+  public void multiConcatKeyWithString(String head, List<String> girls, String tail) {
+    log.info("multiConcatKeyWithString invoke...");
+  }
+
+  @RedisLock(key = "''.concat(#head).concat(':').concat(#tail)", exceptionMessage = "multiConcatKeyWithLong ex")
+  public void multiConcatKeyWithLong(long head, long tail) {
+    log.info("multiConcatKeyWithLong invoke...");
+  }
+
   public static List<String> concatKeys(Collection<String> keysWrapper, String head, String tail, CharSequence
     charSequence) {
     charSequence = charSequence == null ? "" : charSequence;
