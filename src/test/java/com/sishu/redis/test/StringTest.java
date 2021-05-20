@@ -52,4 +52,10 @@ public class StringTest extends RootTest {
     annotatedStringListLock.constantKey("test");
     System.out.println();
   }
+
+  @Test
+  public void testLongKey() {
+    annotatedStringListLock.longKey(11L);
+    System.out.println();
+  }
 }

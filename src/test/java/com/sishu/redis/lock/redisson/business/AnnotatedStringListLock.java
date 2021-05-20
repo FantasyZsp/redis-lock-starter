@@ -47,6 +47,11 @@ public class AnnotatedStringListLock {
     log.info("constantKey invoke...");
   }
 
+  @RedisLock(key = "#longKey", exceptionMessage = "longKey ex", waitTime = 0)
+  public void longKey(long longKey) {
+    log.info("longKey invoke...");
+  }
+
 
   @RedisLock(route = "redis-lock", prefix = "222", key = "#girl1.hasId(#girl1.id)", waitTime = 0)
   public String function(GirlDTO girl1) {
