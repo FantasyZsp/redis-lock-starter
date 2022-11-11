@@ -5,6 +5,9 @@ redisson:
   mode: single
 redis-lock:
   enable: true
+  global-prefix: ""
+
+
 logging:
   level:
-    com.sishu.redis.lock.annotation.RepeatableRedisLockAspect: debug
+    xyz.mydev.redis.lock.aop.RepeatableRedisLockAspect: debug

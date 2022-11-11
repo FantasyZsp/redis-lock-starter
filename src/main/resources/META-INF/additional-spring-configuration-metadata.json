@@ -30,6 +30,11 @@
       "description": "Description for redis-lock.enable."
     },
     {
+      "name": "redis-lock.global-prefix",
+      "type": "java.lang.String",
+      "description": "Global prefix for redis lock."
+    },
+    {
       "name": "redisson.mode",
       "type": "java.lang.String",
       "description": "Description for redisson.mode."

@@ -18,30 +18,30 @@ import java.util.Objects;
 @AllArgsConstructor
 public class GirlDTO {
 
-  private Integer id;
+    private Integer id;
 
-  private String cupSize;
+    private String cupSize;
 
-  private Integer age;
+    private Integer age;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        GirlDTO girlDTO = (GirlDTO) o;
+        return Objects.equals(id, girlDTO.id);
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
-    GirlDTO girlDTO = (GirlDTO) o;
-    return Objects.equals(id, girlDTO.id);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(id);
-  }
-
-  public String hasId(String id) {
-    return id + "mark";
-  }
+    public String hasId(String id) {
+        return id + "mark";
+    }
 }

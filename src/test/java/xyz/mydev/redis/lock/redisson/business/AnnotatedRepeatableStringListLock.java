@@ -1,8 +1,8 @@
 package xyz.mydev.redis.lock.redisson.business;
 
-import xyz.mydev.redis.lock.annotation.RedisLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import xyz.mydev.redis.lock.annotation.RedisLock;
 
 import java.util.List;
 
@@ -14,10 +14,10 @@ import java.util.List;
 @Slf4j
 @Service
 public class AnnotatedRepeatableStringListLock {
-  //  @RedisLock(key = "#girls", exceptionMessage = "String test", waitTime = 0, exceptionClass = NullPointerException.class)
-  @RedisLock(key = "'common-module'", exceptionMessage = "common-module lock failed", waitTime = -1)
-  @RedisLock(key = "#girls", exceptionMessage = "common-module lock failed", waitTime = -1)
-  public void annotatedRepeatableTest(String head, List<String> girls, String tail) {
-    log.info("annotatedRepeatableTest invoke...");
-  }
+    //  @RedisLock(key = "#girls", exceptionMessage = "String test", waitTime = 0, exceptionClass = NullPointerException.class)
+    @RedisLock(key = "'common-module'", exceptionMessage = "common-module lock failed", waitTime = -1)
+    @RedisLock(key = "#girls", exceptionMessage = "common-module lock failed", waitTime = -1)
+    public void annotatedRepeatableTest(String head, List<String> girls, String tail) {
+        log.info("annotatedRepeatableTest invoke...");
+    }
 }

@@ -1,9 +1,9 @@
 package xyz.mydev.redis.lock.test;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import xyz.mydev.redis.RootTest;
 import xyz.mydev.redis.lock.redisson.business.AnnotatedRepeatableStringListLock;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -12,14 +12,14 @@ import java.util.List;
  */
 public class AnnotatedRepeatableStringListLockTest extends RootTest {
 
-  @Autowired
-  private AnnotatedRepeatableStringListLock annotatedRepeatableStringListLock;
+    @Autowired
+    private AnnotatedRepeatableStringListLock annotatedRepeatableStringListLock;
 
 
-  @Test
-  public void test() {
-    annotatedRepeatableStringListLock.annotatedRepeatableTest("head", List.of("1", "222222222", "33333333333333"), "tail");
-    System.out.println();
-  }
+    @Test
+    public void test() {
+        annotatedRepeatableStringListLock.annotatedRepeatableTest("head", List.of("1", "222222222", "33333333333333"), "tail");
+        System.out.println();
+    }
 
 }
