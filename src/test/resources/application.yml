@@ -5,10 +5,11 @@ redis-lock:
   show-dead-lock-waring: true
   mode: 'single'
   redisson:
-    address: "redis://127.0.0.1:6379"
-    database: 1
-    connection-pool-size: 8
-    connection-minimum-idle-size: 4
+    single:
+      address: "redis://127.0.0.1:6379"
+      database: 1
+      connection-pool-size: 8
+      connection-minimum-idle-size: 4
 logging:
   level:
     xyz.mydev.redis.lock.aop.RepeatableRedisLockAspect: debug

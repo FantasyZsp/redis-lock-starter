@@ -48,7 +48,7 @@ public class RedissonClientAutoConfig {
 
         @Bean("singleServerConfig")
         @DependsOn("redissonSingleServerConfig")
-        @ConfigurationProperties(prefix = "redis-lock.redisson")
+        @ConfigurationProperties(prefix = "redis-lock.redisson.single")
         @ConditionalOnMissingBean(SingleServerConfig.class)
         public SingleServerConfig singleServerConfig(Config redissonSingleServerConfig) {
             return redissonSingleServerConfig.useSingleServer();

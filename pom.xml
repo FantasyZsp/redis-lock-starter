@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>xyz.mydev</groupId>
     <artifactId>redis-lock-starter</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>redis-lock-starter</name>
