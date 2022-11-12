@@ -10,7 +10,7 @@ import org.redisson.api.RKeys;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import xyz.mydev.redis.RootTest;
-import xyz.mydev.redis.lock.redisson.GirlDTO;
+import xyz.mydev.redis.business.GirlDTO;
 
 import java.util.concurrent.TimeUnit;
 

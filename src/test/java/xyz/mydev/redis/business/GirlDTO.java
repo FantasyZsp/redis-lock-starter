@@ -1,4 +1,4 @@
-package xyz.mydev.redis.lock.redisson;
+package xyz.mydev.redis.business;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

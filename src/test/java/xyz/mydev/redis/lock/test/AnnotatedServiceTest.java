@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import xyz.mydev.redis.RootTest;
-import xyz.mydev.redis.lock.redisson.GirlDTO;
-import xyz.mydev.redis.lock.redisson.business.AnnotatedService;
+import xyz.mydev.redis.business.AnnotatedService;
+import xyz.mydev.redis.business.GirlDTO;
 import xyz.mydev.redis.lock.util.ThreadUtils;
 
 import java.util.ArrayList;

@@ -1,11 +1,12 @@
 package xyz.mydev.redis.lock.test;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import xyz.mydev.redis.RootTest;
-import xyz.mydev.redis.lock.redisson.GirlDTO;
-import xyz.mydev.redis.lock.redisson.business.AnnotatedController;
+import xyz.mydev.redis.business.AnnotatedController;
+import xyz.mydev.redis.business.GirlDTO;
 import xyz.mydev.redis.lock.util.ThreadUtils;
 
 import java.util.concurrent.Callable;
@@ -34,7 +35,7 @@ public class AnnotatedControllerTest extends RootTest {
     }
 
     @Test
-    public void tryLockCaseInsertWithDtoMultiThread() throws ExecutionException, InterruptedException {
+    public void tryLockCaseInsertWithDtoMultiThread() {
         Callable<String> task = () -> annotatedController.tryLockCaseInsertWithDto(new GirlDTO().setId(1));
 
         FutureTask<String> futureTask = new FutureTask<>(task);
@@ -42,8 +43,11 @@ public class AnnotatedControllerTest extends RootTest {
         new Thread(futureTask, "T1-tryLock").start();
         new Thread(futureTask2, "T2-tryLock").start();
 
-        log.info("T1执行结果: {}", futureTask.get());
-        log.info("T2执行结果: {}", futureTask2.get());
+        Assertions.assertThrows(ExecutionException.class, () -> {
+            log.info("T1执行结果: {}", futureTask.get());
+            log.info("T2执行结果: {}", futureTask2.get());
+        });
+
     }
 
     @Test
@@ -75,6 +79,6 @@ public class AnnotatedControllerTest extends RootTest {
         new Thread(runnable, "T2").start();
 
 
-        ThreadUtils.join(200000);
+        ThreadUtils.join(5000);
     }
 }

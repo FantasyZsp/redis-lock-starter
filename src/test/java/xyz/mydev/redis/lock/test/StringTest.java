@@ -3,8 +3,8 @@ package xyz.mydev.redis.lock.test;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import xyz.mydev.redis.RootTest;
-import xyz.mydev.redis.lock.redisson.GirlDTO;
-import xyz.mydev.redis.lock.redisson.business.AnnotatedStringListLock;
+import xyz.mydev.redis.business.AnnotatedStringListLock;
+import xyz.mydev.redis.business.GirlDTO;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package xyz.mydev.redis.lock.redisson.business;
+package xyz.mydev.redis.business;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,10 +1,9 @@
-package xyz.mydev.redis.lock.redisson.business;
+package xyz.mydev.redis.business;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import xyz.mydev.redis.lock.annotation.RedisLock;
-import xyz.mydev.redis.lock.redisson.GirlDTO;
 
 /**
  * @author ZSP

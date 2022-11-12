@@ -10,7 +10,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -36,12 +36,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RepeatableRedisLockAspect implements Ordered {
     private String globalPrefix;
+    private boolean showDeadLockWarning;
     private static final String SEPARATOR = ":";
 
     private RedissonClient redissonClient;
 
 
-    @Pointcut("@annotation(xyz.mydev.redis.lock.annotation.RedisLock)||@annotation(xyz.mydev.redis.lock.annotation.RedisLocks)")
+    @Pointcut("@annotation(xyz.mydev.redis.lock.annotation.RedisLock) || @annotation(xyz.mydev.redis.lock.annotation.RedisLocks)")
     public void redisLocksPointCut() {
     }
 
@@ -49,7 +50,7 @@ public class RepeatableRedisLockAspect implements Ordered {
     public Object redisLocksAround(ProceedingJoinPoint pjp) throws Throwable {
         Method targetMethod = this.getTargetMethod(pjp);
         // linkedHashSet
-        Set<RedisLock> annotations = AnnotationUtils.getDeclaredRepeatableAnnotations(targetMethod, RedisLock.class);
+        Set<RedisLock> annotations = AnnotatedElementUtils.getMergedRepeatableAnnotations(targetMethod, RedisLock.class);
 
         Objects.requireNonNull(annotations);
 
@@ -151,7 +152,7 @@ public class RepeatableRedisLockAspect implements Ordered {
         if (log.isWarnEnabled() && lockList.size() > 1) {
             RedissonLockHolder secondLockHolder = lockList.get(1);
             boolean waitForeverSomeTime = secondLockHolder.getAnnotation().waitTime() < 0;
-            if (waitForeverSomeTime) {
+            if (waitForeverSomeTime && showDeadLockWarning) {
                 log.warn("WARNING!!!The second lock [{}] is not set waitTime when use lock-composed mode, maybe deadlock ", secondLockHolder.getLockName());
             }
         }
@@ -303,6 +304,10 @@ public class RepeatableRedisLockAspect implements Ordered {
 
     public void setGlobalPrefix(String globalPrefix) {
         this.globalPrefix = globalPrefix;
+    }
+
+    public void setShowDeadLockWarning(boolean showDeadLockWarning) {
+        this.showDeadLockWarning = showDeadLockWarning;
     }
 
     @Override

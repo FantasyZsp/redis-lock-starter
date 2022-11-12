@@ -23,7 +23,7 @@ public class RedissonLockTest extends RootTest {
     private RedissonClient redissonClient;
 
 
-    private Runnable lockTask = () -> {
+    private final Runnable lockTask = () -> {
         final String lockName = "lockWithTime";
         RLock lock = redissonClient.getLock(lockName);
         try {
