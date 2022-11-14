@@ -57,9 +57,12 @@ public class RedissonClientAutoConfig {
         @Bean("redissonClient4Lock")
         @DependsOn("singleServerConfig")
         @ConditionalOnMissingBean(name = "redissonClient4Lock")
-        public RedissonClient redissonClient4Lock(Config redissonSingleServerConfig) {
-            log.info("single redissonClient init. address:{}, database:{}", redissonSingleServerConfig.useSingleServer().getAddress(),
-                redissonSingleServerConfig.useSingleServer().getDatabase());
+        public RedissonClient redissonClient4Lock(Config redissonSingleServerConfig, SingleServerConfig singleServerConfig) {
+            if ("".equals(singleServerConfig.getPassword())) {
+                singleServerConfig.setPassword(null);
+            }
+            log.info("single redissonClient init. address:{}, database:{}", singleServerConfig.getAddress(),
+                singleServerConfig.getDatabase());
             return Redisson.create(redissonSingleServerConfig);
         }
     }

@@ -54,6 +54,7 @@ public class AnnotatedControllerTest extends RootTest {
     public void reentrantLockTest() throws ExecutionException, InterruptedException {
         Callable<String> task = () -> {
             annotatedController.tryLockCaseInsertWithDto(new GirlDTO().setId(1));
+            Thread.sleep(1000);
             return annotatedController.tryLockCaseInsertWithDto(new GirlDTO().setId(1));
         };
 
@@ -67,8 +68,8 @@ public class AnnotatedControllerTest extends RootTest {
     }
 
     @Test
-    public void retrantLock() {
-        String result = annotatedController.retrantLock(new GirlDTO().setId(1));
+    public void reentrantLock() {
+        String result = annotatedController.reentrantLock(new GirlDTO().setId(1));
         log.info(result);
     }
 
@@ -79,6 +80,6 @@ public class AnnotatedControllerTest extends RootTest {
         new Thread(runnable, "T2").start();
 
 
-        ThreadUtils.join(5000);
+        ThreadUtils.join(1000);
     }
 }

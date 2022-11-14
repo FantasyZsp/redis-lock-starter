@@ -10,6 +10,7 @@ redis-lock:
       database: 1
       connection-pool-size: 8
       connection-minimum-idle-size: 4
+      password:
 logging:
   level:
     xyz.mydev.redis.lock.aop.RepeatableRedisLockAspect: debug

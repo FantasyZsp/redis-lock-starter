@@ -26,15 +26,15 @@ public class AnnotatedController {
         return uniqueName + " 插入成功！";
     }
 
-    @RedisLock(prefix = "redis-lock", key = "#girlDTO.id", waitTime = 0, exceptionClass = IllegalArgumentException.class, exceptionMessage = "xxx")
+    @RedisLock(prefix = "redis-lock", key = "#girlDTO.id", waitTime = 0, exceptionClass = IllegalArgumentException.class, exceptionMessage = "tryLockCaseInsertWithDtoEx")
     @PostMapping("/try-lock-dto")
     public String tryLockCaseInsertWithDto(@RequestBody GirlDTO girlDTO) {
         return girlDTO + " 插入成功！";
     }
 
     @RedisLock(prefix = "redis-lock", key = "#girlDTO.id", waitTime = 2000)
-    @PostMapping("/retrant-lock")
-    public String retrantLock(@RequestBody GirlDTO girlDTO) {
+    @PostMapping("/reentrant-lock")
+    public String reentrantLock(@RequestBody GirlDTO girlDTO) {
         return annotatedService.lockWithDto(girlDTO);
     }
 
