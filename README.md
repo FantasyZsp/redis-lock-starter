@@ -51,10 +51,14 @@
 
 ##### 1.4.1
 
-1. 重构测试目录 
+1. 重构测试目录
 2. 分离锁功能与redissonClient的自动装配逻辑
 3. 修复空密码时的错误
 4. 单测断言
 5. 去除apache common包
+
+##### 1.4.2-snapshot
+
+1. 切面注入bean name为redissonClient4Lock的redissonClient
 
 #### TODO
