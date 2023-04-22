@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import xyz.mydev.redis.RootTest;
 import xyz.mydev.redis.business.GirlDTO;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import static xyz.mydev.redis.lock.util.LogUtils.print;
 
@@ -65,10 +65,10 @@ public class RedissonDataOpsTest extends RootTest {
 
         myString.set("init");
         // set nx px   false
-        Assertions.assertFalse(myString.trySet("init2", 1, TimeUnit.MINUTES));
+        Assertions.assertFalse(myString.setIfAbsent("init2", Duration.ofMinutes(1)));
 
         myString.delete();
-        Assertions.assertTrue(myString.trySet("init2", 1, TimeUnit.MINUTES));
+        Assertions.assertTrue(myString.setIfAbsent("init2", Duration.ofMinutes(1)));
         print("trySet后是否存在：{}", myString.isExists());
         print("myString 值：{}", myString.get());
     }

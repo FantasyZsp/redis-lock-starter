@@ -1,0 +1,2 @@
+xyz.mydev.redis.lock.autoconfigure.RedissonClientAutoConfig
+xyz.mydev.redis.lock.autoconfigure.RedisLockAutoConfig

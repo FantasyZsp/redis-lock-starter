@@ -4,10 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import xyz.mydev.redis.lock.annotation.RedisLock;
 import xyz.mydev.redis.lock.aop.RepeatableRedisLockAspect;
 
@@ -17,9 +16,8 @@ import xyz.mydev.redis.lock.aop.RepeatableRedisLockAspect;
  *
  * @author ZSP
  */
-@Configuration
+@AutoConfiguration(after = RedissonClientAutoConfig.class)
 @ConditionalOnProperty(prefix = "redis-lock", name = "enable", havingValue = "true")
-@AutoConfigureAfter(RedissonClientAutoConfig.class)
 @Slf4j
 public class RedisLockAutoConfig {
 

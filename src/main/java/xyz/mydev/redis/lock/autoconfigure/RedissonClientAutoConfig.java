@@ -7,6 +7,7 @@ import org.redisson.api.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.redisson.config.SingleServerConfig;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -28,7 +29,7 @@ import org.springframework.context.annotation.DependsOn;
  * @author ZSP
  * @see org.redisson.config.Config
  */
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration
 @ConditionalOnClass(RedissonClient.class)
 @ConditionalOnProperty(prefix = "redis-lock", name = "enable-client", havingValue = "true", matchIfMissing = true)
 public class RedissonClientAutoConfig {
@@ -54,7 +55,7 @@ public class RedissonClientAutoConfig {
             return redissonSingleServerConfig.useSingleServer();
         }
 
-        @Bean("redissonClient4Lock")
+        @Bean(value = "redissonClient4Lock", destroyMethod = "shutdown")
         @DependsOn("singleServerConfig")
         @ConditionalOnMissingBean(name = "redissonClient4Lock")
         public RedissonClient redissonClient4Lock(Config redissonSingleServerConfig, SingleServerConfig singleServerConfig) {
