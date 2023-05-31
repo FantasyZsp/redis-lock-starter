@@ -1,4 +1,4 @@
-package xyz.mydev.redis.lock.util;
+package xyz.mydev.redis;
 
 import java.util.concurrent.TimeUnit;
 

@@ -14,7 +14,7 @@ import xyz.mydev.redis.business.GirlDTO;
 
 import java.util.concurrent.TimeUnit;
 
-import static xyz.mydev.redis.lock.util.LogUtils.print;
+import static xyz.mydev.redis.LogUtils.print;
 
 /**
  * @author ZSP

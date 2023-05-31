@@ -4,23 +4,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import xyz.mydev.redis.RootTest;
+import xyz.mydev.redis.ThreadUtils;
 import xyz.mydev.redis.business.AnnotatedService;
 import xyz.mydev.redis.business.GirlDTO;
-import xyz.mydev.redis.lock.util.ThreadUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author ZSP
  */
 @Slf4j
 public class AnnotatedServiceTest extends RootTest {
-    @Autowired
-    private AnnotatedService annotatedService;
     private static final Map<Integer, GirlDTO> TEMP_DATABASES = new HashMap<>();
 
     static {
@@ -28,6 +30,9 @@ public class AnnotatedServiceTest extends RootTest {
         TEMP_DATABASES.put(2, new GirlDTO(2, "2", 2));
         TEMP_DATABASES.put(3, new GirlDTO(3, "3", 3));
     }
+
+    @Autowired
+    private AnnotatedService annotatedService;
 
     @Test
     public void testMultiKey() {

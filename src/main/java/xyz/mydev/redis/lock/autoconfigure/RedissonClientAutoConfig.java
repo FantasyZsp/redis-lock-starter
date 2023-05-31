@@ -54,7 +54,7 @@ public class RedissonClientAutoConfig {
             return redissonSingleServerConfig.useSingleServer();
         }
 
-        @Bean("redissonClient4Lock")
+        @Bean(value = "redissonClient4Lock", destroyMethod = "shutdown")
         @DependsOn("singleServerConfig")
         @ConditionalOnMissingBean(name = "redissonClient4Lock")
         public RedissonClient redissonClient4Lock(Config redissonSingleServerConfig, SingleServerConfig singleServerConfig) {

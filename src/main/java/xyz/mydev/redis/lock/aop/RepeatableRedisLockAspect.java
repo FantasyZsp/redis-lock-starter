@@ -23,7 +23,14 @@ import xyz.mydev.redis.lock.util.SpelExpressionParserUtils;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -35,12 +42,26 @@ import java.util.stream.Collectors;
 @Aspect
 @Slf4j
 public class RepeatableRedisLockAspect implements Ordered {
+    private static final String SEPARATOR = ":";
     private String globalPrefix;
     private boolean showDeadLockWarning;
-    private static final String SEPARATOR = ":";
-
     private RedissonClient redissonClient;
 
+    public static int objectLength(Object object) {
+        Objects.requireNonNull(object);
+        if (object instanceof Collection) {
+            return ((Collection<?>) object).size();
+        }
+
+        if (object instanceof Map<?, ?>) {
+            return ((Map<?, ?>) object).size();
+        }
+
+        if (object.getClass().isArray()) {
+            return Array.getLength(object);
+        }
+        return 1;
+    }
 
     @Pointcut("@annotation(xyz.mydev.redis.lock.annotation.RedisLock) || @annotation(xyz.mydev.redis.lock.annotation.RedisLocks)")
     public void redisLocksPointCut() {
@@ -128,7 +149,6 @@ public class RepeatableRedisLockAspect implements Ordered {
 
     }
 
-
     private List<RLock> getLockListSortedByName(String prefix, Object lockKey) {
         return getLockListSortedByName(appendLockNameList(prefix, lockKey));
     }
@@ -174,7 +194,6 @@ public class RepeatableRedisLockAspect implements Ordered {
             }
         }
     }
-
 
     private void lock(RedissonLockHolder lockHolder) throws Exception {
 
@@ -273,23 +292,6 @@ public class RepeatableRedisLockAspect implements Ordered {
         }
         return lockNameList;
     }
-
-    public static int objectLength(Object object) {
-        Objects.requireNonNull(object);
-        if (object instanceof Collection) {
-            return ((Collection<?>) object).size();
-        }
-
-        if (object instanceof Map<?, ?>) {
-            return ((Map<?, ?>) object).size();
-        }
-
-        if (object.getClass().isArray()) {
-            return Array.getLength(object);
-        }
-        return 1;
-    }
-
 
     private Method getTargetMethod(ProceedingJoinPoint pjp) throws NoSuchMethodException {
         Signature signature = pjp.getSignature();

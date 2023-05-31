@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import xyz.mydev.redis.RootTest;
+import xyz.mydev.redis.ThreadUtils;
 import xyz.mydev.redis.business.AnnotatedController;
 import xyz.mydev.redis.business.GirlDTO;
-import xyz.mydev.redis.lock.util.ThreadUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;

@@ -1,4 +1,4 @@
-package xyz.mydev.redis.lock.util;
+package xyz.mydev.redis;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
